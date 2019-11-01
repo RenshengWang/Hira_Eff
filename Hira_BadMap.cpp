@@ -87,12 +87,14 @@ void Hira_BadMap::Read_BadMap_Tele(string FileName)
 bool Hira_BadMap::IsBad_StripX(int HiraIndex,int StripX_Index)
 {
   if(BadStripMap[HiraIndex][StripX_Index][0]==1) { return 1; }
+  if(StripX_Index==0 || StripX_Index==15 || StripX_Index==16 || StripX_Index==31) { return 1; }
 return 0;
 }
 
 bool Hira_BadMap::IsBad_StripY(int HiraIndex,int StripY_Index)
 {
   if(BadStripMap[HiraIndex][StripY_Index][1]==1) { return 1; }
+  if(StripY_Index==0 || StripY_Index==15 || StripY_Index==16 || StripY_Index==31) { return 1; }
 return 0;
 }
 
