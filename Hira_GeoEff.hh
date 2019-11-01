@@ -36,6 +36,7 @@ public:
   
   TFile* f1_Results;
   TH2D* h2_WholeHira_Theta_Phi_Lab;
+  TH2D* h2_noBadMap_Theta_Phi_Lab;
   TH2D* h2_BadMap_Theta_Phi_Lab;
   TH1D* h1_BadMap_Theta_Lab_HitCount;
   TH1D* h1_BadMap_Theta_Lab_Eff;

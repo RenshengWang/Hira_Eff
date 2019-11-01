@@ -4,6 +4,7 @@ ClassImp(Hira_GeoEff);
 Hira_GeoEff::Hira_GeoEff()
 {
   h2_WholeHira_Theta_Phi_Lab = 0;
+  h2_noBadMap_Theta_Phi_Lab = 0;
   h2_BadMap_Theta_Phi_Lab = 0;
   h1_BadMap_Theta_Lab_HitCount = 0;
   h1_BadMap_Theta_Lab_Eff = 0;
@@ -30,11 +31,13 @@ void Hira_GeoEff::ReadSimData(string SimFileName,string RootFileNameForStore)
   
   h2_WholeHira_Theta_Phi_Lab = 0;
   h2_BadMap_Theta_Phi_Lab = 0;
+  h2_noBadMap_Theta_Phi_Lab = 0;
   h1_BadMap_Theta_Lab_HitCount = 0;
   h1_BadMap_Theta_Lab_Eff = 0;
   
   h2_WholeHira_Theta_Phi_Lab = new TH2D("h2_WholeHira_Theta_Phi_Lab",";#theta_{Lab}(Deg.);#phi_{Lab}(Deg.)",720,0,180,1440,0,360);
   h2_BadMap_Theta_Phi_Lab = new TH2D("h2_BadMap_Theta_Phi_Lab",";#theta_{Lab}(Deg.);#phi_{Lab}(Deg.)",600,20,80,1000,150,250);
+  h2_noBadMap_Theta_Phi_Lab = new TH2D("h2_noBadMap_Theta_Phi_Lab",";#theta_{Lab}(Deg.);#phi_{Lab}(Deg.)",600,20,80,1000,150,250);
   h1_BadMap_Theta_Lab_HitCount = new TH1D("h1_BadMap_Theta_Lab_HitCount",";#theta_{Lab}(Deg.);count",600,20,80);
   h1_BadMap_Theta_Lab_Eff = (TH1D*) h1_BadMap_Theta_Lab_HitCount->Clone("h1_BadMap_Theta_Lab_Eff");
   
@@ -81,6 +84,7 @@ void Hira_GeoEff::ReadSimData(string SimFileName,string RootFileNameForStore)
       bool IsBad_StripX = Hira_BadMapper->IsBad_StripX(HiraIndex,X_StripIndex);
       bool IsBad_StripY = Hira_BadMapper->IsBad_StripY(HiraIndex,Y_StripIndex);
       //with BadStripMap Filter.
+      h2_noBadMap_Theta_Phi_Lab->Fill(Theta,Phi);
       if(IsBad_Hira==0 && IsBad_CsI==0 && IsBad_StripX==0 && IsBad_StripY==0)
       {
         h2_BadMap_Theta_Phi_Lab->Fill(Theta,Phi);
@@ -93,6 +97,7 @@ void Hira_GeoEff::ReadSimData(string SimFileName,string RootFileNameForStore)
   f1_Results = new TFile(RootFileNameForStore.c_str(),"update");
   h2_WholeHira_Theta_Phi_Lab->Write("",TObject::kOverwrite);
   h2_BadMap_Theta_Phi_Lab->Write("",TObject::kOverwrite);
+  h2_noBadMap_Theta_Phi_Lab->Write("",TObject::kOverwrite);
   h1_BadMap_Theta_Lab_HitCount->Write("",TObject::kOverwrite);
   h1_BadMap_Theta_Lab_Eff->Write("",TObject::kOverwrite);
   h1_HiraHit_Multi->Write("",TObject::kOverwrite);
@@ -118,6 +123,7 @@ void Hira_GeoEff::Draw_Info()
 {
   if(h2_WholeHira_Theta_Phi_Lab!=0) { TCanvas* c1_tem = new TCanvas("c1_WholeHira_Theta_Phi_Lab","c1_WholeHira_Theta_Phi_Lab",1); h2_WholeHira_Theta_Phi_Lab->Draw("colz"); }
   if(h2_BadMap_Theta_Phi_Lab!=0) { TCanvas* c1_tem = new TCanvas("c1_BadMap_Theta_Phi_Lab","c1_BadMap_Theta_Phi_Lab",1); h2_BadMap_Theta_Phi_Lab->Draw("colz"); }
+  if(h2_noBadMap_Theta_Phi_Lab!=0) { TCanvas* c1_tem = new TCanvas("c1_noBadMap_Theta_Phi_Lab","c1_noBadMap_Theta_Phi_Lab",1); h2_noBadMap_Theta_Phi_Lab->Draw("colz"); }
   if(h1_BadMap_Theta_Lab_HitCount!=0) { TCanvas* c1_tem = new TCanvas("c1_BadMap_Theta_Lab_HitCount","c1_BadMap_Theta_Lab_HitCount",1); h1_BadMap_Theta_Lab_HitCount->Draw("hist"); }
   if(h1_BadMap_Theta_Lab_Eff!=0) { TCanvas* c1_tem = new TCanvas("c1_BadMap_Theta_Lab_Eff","c1_BadMap_Theta_Lab_Eff",1); h1_BadMap_Theta_Lab_Eff->Draw("colz"); }
   if(h1_HiraHit_Multi!=0) { TCanvas* c1_tem = new TCanvas("c1_HiraHit_Multi","c1_HiraHit_Multi",1); h1_HiraHit_Multi->Draw("colz"); }
@@ -130,6 +136,7 @@ void Hira_GeoEff::ReadGeoEffHistogram(string RootFileName)
   if(h1_BadMap_Theta_Lab_Eff!=0) { cout<<"Get the GeoEff Correction histogram!"<<endl; }
   h2_WholeHira_Theta_Phi_Lab = (TH2D*) f1_Results->Get("h2_WholeHira_Theta_Phi_Lab");
   h2_BadMap_Theta_Phi_Lab = (TH2D*) f1_Results->Get("h2_BadMap_Theta_Phi_Lab");
+  h2_noBadMap_Theta_Phi_Lab = (TH2D*) f1_Results->Get("h2_noBadMap_Theta_Phi_Lab");
   h1_BadMap_Theta_Lab_HitCount = (TH1D*) f1_Results->Get("h1_BadMap_Theta_Lab_HitCount");
   h1_HiraHit_Multi = (TH1D*) f1_Results->Get("h1_HiraHit_Multi");
 }
