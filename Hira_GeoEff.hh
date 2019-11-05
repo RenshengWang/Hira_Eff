@@ -13,8 +13,9 @@
 #include "fstream"
 #include "TCutG.h"
 #include "Hira_BadMap.hh"
+#include "Hira_PosCali.hh"
 
-//#define NPTOOL 0
+#define NPTOOL 1
 
 #ifdef NPTOOL
 #include "THiraData.h"
@@ -33,6 +34,9 @@ public:
   Hira_BadMap* Hira_BadMapper;
   void Initial_Hira_BadMapper(Hira_BadMap* tem) { Hira_BadMapper = tem; }
   void Cal_GeoEff(TH1D* h1_Count,TH1D* h1_GeoEff,int TotalSimEvtNum);
+  
+  Hira_PosCali* HiraPos;
+  void Initial_Hira_PosCali(Hira_PosCali* tem) { HiraPos = tem; }
   
   TFile* f1_Results;
   TH2D* h2_WholeHira_Theta_Phi_Lab;

@@ -67,8 +67,9 @@ void Hira_GeoEff::ReadSimData(string SimFileName,string RootFileNameForStore)
       double Pz = SrcData->GetMomentumDirectionZ(iSrc);
       
       TVector3 P_Lab(Px,Py,Pz);
-      double Theta = P_Lab.Theta()*RadToDeg();
-      double Phi = P_Lab.Phi()*RadToDeg();
+      
+      double Theta = P_Lab.Theta()*RadToDeg(); //real theta, no digitized
+      double Phi = P_Lab.Phi()*RadToDeg(); //real phi, no digitized
       
       if(Phi<0) { Phi+=360; }
       h2_WholeHira_Theta_Phi_Lab->Fill(Theta,Phi);
@@ -83,6 +84,11 @@ void Hira_GeoEff::ReadSimData(string SimFileName,string RootFileNameForStore)
       bool IsBad_CsI = Hira_BadMapper->IsBad_CsI(HiraIndex,X_StripIndex,Y_StripIndex); //Attention: the X_StripIndex already be flipped.
       bool IsBad_StripX = Hira_BadMapper->IsBad_StripX(HiraIndex,X_StripIndex);
       bool IsBad_StripY = Hira_BadMapper->IsBad_StripY(HiraIndex,Y_StripIndex);
+      
+      double Theta_Digitized = HiraPos->GetTheta(HiraIndex, X_StripIndex, Y_StripIndex);
+      double Phi_Digitized = HiraPos->GetPhi(HiraIndex, X_StripIndex, Y_StripIndex);;
+      Theta = Theta_Digitized; 
+      Phi = Phi_Digitized;
       //with BadStripMap Filter.
       h2_noBadMap_Theta_Phi_Lab->Fill(Theta,Phi);
       if(IsBad_Hira==0 && IsBad_CsI==0 && IsBad_StripX==0 && IsBad_StripY==0)

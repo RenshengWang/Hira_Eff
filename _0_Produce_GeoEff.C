@@ -13,6 +13,9 @@ void _0_Produce_GeoEff()
   Hira_BadMapper->Read_BadMap_CsI("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_CsI_"+Hira_BadMap_Version+".dat");
   Hira_BadMapper->Read_BadMap_Tele("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_Tele_"+Hira_BadMap_Version+".dat");
   
+  Hira_PosCali* HiraPos = new Hira_PosCali();
+  HiraPos->Read_Hira_PixelAngle("./Cal_PixelAngle/PixelAngle_BeamPos_0_0_0.dat");
+  
   Hira_GeoEff* Hira_GeoEfficiency = new Hira_GeoEff();
   string RootFileNameForStore = "./GeoEff/f1_GeoEff_"+Hira_BadMap_Version+".root";
   if(Is_ProduceGeoEff==0)
@@ -25,6 +28,7 @@ void _0_Produce_GeoEff()
   else if(Is_ProduceGeoEff==1)
   {//the below is for producing the GeoEff
     Hira_GeoEfficiency->Initial_Hira_BadMapper(Hira_BadMapper);
+    Hira_GeoEfficiency->Initial_Hira_PosCali(HiraPos);
     string SimFileName = SimData_Path+"/myResult_"+SimConfigTag+".root";
     Hira_GeoEfficiency->ReadSimData(SimFileName,RootFileNameForStore);
   }
