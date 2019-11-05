@@ -37,6 +37,8 @@ public:
   
   Hira_PosCali* HiraPos;
   void Initial_Hira_PosCali(Hira_PosCali* tem) { HiraPos = tem; }
+  bool IsApplyPixelAngle;
+  void Set_IsApplyPixelAngle(bool tem) { IsApplyPixelAngle = tem; }
   
   TFile* f1_Results;
   TH2D* h2_WholeHira_Theta_Phi_Lab;

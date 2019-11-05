@@ -11,6 +11,7 @@ Hira_GeoEff::Hira_GeoEff()
   h1_HiraHit_Multi = 0;
   Hira_BadMapper = 0;
   f1_Results = 0;
+  IsApplyPixelAngle = 1;
 }
 
 Hira_GeoEff::~Hira_GeoEff()
@@ -87,8 +88,11 @@ void Hira_GeoEff::ReadSimData(string SimFileName,string RootFileNameForStore)
       
       double Theta_Digitized = HiraPos->GetTheta(HiraIndex, X_StripIndex, Y_StripIndex);
       double Phi_Digitized = HiraPos->GetPhi(HiraIndex, X_StripIndex, Y_StripIndex);;
-      Theta = Theta_Digitized; 
-      Phi = Phi_Digitized;
+      if(IsApplyPixelAngle==1)
+      { 
+        Theta = Theta_Digitized; 
+        Phi = Phi_Digitized;
+      }
       //with BadStripMap Filter.
       h2_noBadMap_Theta_Phi_Lab->Fill(Theta,Phi);
       if(IsBad_Hira==0 && IsBad_CsI==0 && IsBad_StripX==0 && IsBad_StripY==0)
