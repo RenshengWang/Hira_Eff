@@ -14,6 +14,7 @@
 #include "fstream"
 #include "TCutG.h"
 #include "Hira_BadMap.hh"
+#include "Hira_PosCali.hh"
 #include "TVector3.h"
 #include "TLorentzVector.h"
 #include "Hira_GeoEff.hh"
@@ -32,6 +33,9 @@ public:
   void Initial_Hira_BadMapper(Hira_BadMap* tem) { Hira_BadMapper = tem; }
   Hira_GeoEff* Hira_GeoEfficiency;
   void Initial_Hira_GeoEff(Hira_GeoEff* tem) { Hira_GeoEfficiency = tem; }
+  Hira_PosCali* HiraPos;
+  void Initial_Hira_PosCali(Hira_PosCali* tem) { HiraPos = tem; }
+  
   
   double GeoEff_Cut;
   void Set_GeoEff_Cut(double tem) { GeoEff_Cut = tem; }
@@ -49,7 +53,7 @@ public:
   TH2D* h2_Theta_Ekin_CM_GeoReactionEff[20];
   TH2D* h2_Theta_Ekin_CM_GeoEff[20];
   TH2D* h2_Theta_Ekin_CM_noEff[20];
-  void ReadExpData(string ExpDataFile,string FileForStore);
+  void ReadExpData(int ExpFileNum,string ExpDataFile[],string FileForStore);
   TH2D* h2_PID_ZA;
   
   //The below is for transfer from Lab to CM.

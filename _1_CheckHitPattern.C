@@ -6,8 +6,7 @@ void GetNormalized_CountNum(int X_Dir, TH1D* h1_Count,TH1D* h1_Count_Normalized,
 void _1_CheckHitPattern()
 {
   string DataPath = "./"; //"/mnt/analysis/e15190/Brown/rootfiles";
-  string RunTag = "4100-4101";
-  string DataFileName = "CalibratedData_"+RunTag+".root";
+  string RunTag = "4100";
   
   string Hira_BadMap_Version = "V1";
   
@@ -22,8 +21,8 @@ void _1_CheckHitPattern()
   Hira_HitPattern_Checker->Set_IsActive_BadMap(1);
   Hira_HitPattern_Checker->Initial_Hira_BadMapper(Hira_BadMapper);
   
-  const int ExpFileNum = 2;
-  int RunNoList[] = {4100,4101,4102,4103,4104,4105,4106,4107,4108,4109};
+  const int ExpFileNum = 1;
+  int RunNoList[] = {4100,2861,4100,4101,4102,4103,4104,4105,4106,4107,4108,4109};
   string ExpFileNameList[ExpFileNum];
   char NameTem[200];
   for(int i=0;i<ExpFileNum;i++)

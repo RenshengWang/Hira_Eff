@@ -49,20 +49,20 @@ void Hira_ESpec::Initial_ESpecHisto()
     }
 
     sprintf(NameTem,"h2_%s_Theta_Ekin_CM_GeoReactionEff",ParticleName[i].c_str());
-    h2_Theta_Ekin_CM_GeoReactionEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV/u);#theta_{CM}(Deg.)",300,0,300,180,0,180);
+    h2_Theta_Ekin_CM_GeoReactionEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV);#theta_{CM}(Deg.)",300,0,300,180,0,180);
     
     sprintf(NameTem,"h2_%s_Theta_Ekin_CM_GeoEff",ParticleName[i].c_str());
-    h2_Theta_Ekin_CM_GeoEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV/u);#theta_{CM}(Deg.)",300,0,300,180,0,180);
+    h2_Theta_Ekin_CM_GeoEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV);#theta_{CM}(Deg.)",300,0,300,180,0,180);
 
     sprintf(NameTem,"h2_%s_Theta_Ekin_CM_noEff",ParticleName[i].c_str());
-    h2_Theta_Ekin_CM_noEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV/u);#theta_{CM}(Deg.)",300,0,300,180,0,180);
+    h2_Theta_Ekin_CM_noEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV);#theta_{CM}(Deg.)",300,0,300,180,0,180);
   }
   
   h1_Hira_ThetaLab_Dis = new TH1D("h1_Hira_ThetaLab_Dis",";#theta_{Lab}(Deg.);Count",600,20,80);
   h2_PID_ZA = new TH2D("h2_PID_ZA",";ParticleZ;ParticleA",10,0,10,10,0,10);
 }
 
-void Hira_ESpec::ReadExpData(string ExpDataFile,string FileForStore)
+void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FileForStore)
 {
   if(Hira_BadMapper==0) { cout<<"Hira_BadMapper==0"<<endl; return; }
   if(Hira_GeoEfficiency==0) { cout<<"Hira_GeoEfficiency==0"<<endl; return; }
@@ -70,8 +70,11 @@ void Hira_ESpec::ReadExpData(string ExpDataFile,string FileForStore)
   Initial_ESpecHisto();
   
   TChain* t1_Data = new TChain("E15190");
-  t1_Data->AddFile(ExpDataFile.c_str());
-
+  for(int i=0;i<ExpFileNum;i++)
+  {
+    t1_Data->AddFile(ExpDataFile[i].c_str());
+  }
+  
   Int_t fmulti;
   double fTheta[200]; double fPhi[200]; 
   int fnumtel[200]; int fnumstripf[200]; int fnumstripb[200];
@@ -117,8 +120,14 @@ void Hira_ESpec::ReadExpData(string ExpDataFile,string FileForStore)
           {
             double P_Mag_Lab = Sqrt(fKinEnergy[iP]*fKinEnergy[iP]+2*fKinEnergy[iP]*ParticleMass[iPID]);
             TVector3 P_3D_Lab(0,0,P_Mag_Lab);
+            
             P_3D_Lab.SetTheta(fTheta[iP]);
             P_3D_Lab.SetPhi(fPhi[iP]);
+            
+            /*
+            P_3D_Lab.SetTheta(HiraPos->GetTheta(fnumtel[iP],fnumstripf[iP],fnumstripb[iP])*DegToRad());
+            P_3D_Lab.SetPhi(HiraPos->GetPhi(fnumtel[iP],fnumstripf[iP],fnumstripb[iP])*DegToRad());
+            */
             double Theta_Lab = P_3D_Lab.Theta()*RadToDeg();
             
             TLorentzVector P_4D_CM(P_3D_Lab,ParticleMass[iPID]+fKinEnergy[iP]);

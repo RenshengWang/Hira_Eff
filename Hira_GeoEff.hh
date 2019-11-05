@@ -14,7 +14,7 @@
 #include "TCutG.h"
 #include "Hira_BadMap.hh"
 
-#define NPTOOL 1
+//#define NPTOOL 0
 
 #ifdef NPTOOL
 #include "THiraData.h"

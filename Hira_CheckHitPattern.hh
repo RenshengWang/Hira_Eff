@@ -29,7 +29,6 @@ public:
   void Set_IsActive_BadMap(bool tem) { IsActive_BadMap = tem; }
   void Initial_Hira_BadMapper(Hira_BadMap* tem) { Hira_BadMapper = tem; IsActive_BadMap = 1;}
   
-  void ReadExpData(string ExpFileName,string RootFileNameForStore);
   void ReadExpData(int FileNum, string ExpFileName[],string RootFileNameForStore);
   
   TH1D* h1_WholeHira_Multi_Dis;
