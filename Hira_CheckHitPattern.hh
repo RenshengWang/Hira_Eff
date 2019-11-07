@@ -21,16 +21,22 @@ using namespace TMath;
 class Hira_CheckHitPattern : public TObject
 {
 public:
-  Hira_CheckHitPattern();
+  Hira_CheckHitPattern(string SystemTagTem, string RunTagTem, string Hira_BadMap_VersionTem);
   ~Hira_CheckHitPattern();
+  string SystemTag;
+  string RunTag;
+  string Hira_BadMap_Version;
+  void SetAnaTag(string SystemTagTem, string RunTagTem, string Hira_BadMap_VersionTem);
   
   Hira_BadMap* Hira_BadMapper;
   bool IsActive_BadMap;
   void Set_IsActive_BadMap(bool tem) { IsActive_BadMap = tem; }
   void Initial_Hira_BadMapper(Hira_BadMap* tem) { Hira_BadMapper = tem; IsActive_BadMap = 1;}
   
-  void ReadExpData(int FileNum, string ExpFileName[],string RootFileNameForStore);
+  void ReadExpData(int FileNum, string ExpFileName[],string RootFilePathForStore);
   
+  void InitialHisto();
+  bool IsHistoInitialized;
   TH1D* h1_WholeHira_Multi_Dis;
   TH2D* h2_WholeHira_Theta_Phi_Lab[2];
   TH1D* h1_1Hira_Theta_HitCount[12][2];

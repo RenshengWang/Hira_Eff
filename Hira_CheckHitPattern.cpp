@@ -1,8 +1,12 @@
 #include "Hira_CheckHitPattern.hh"
 ClassImp(Hira_CheckHitPattern);
 
-Hira_CheckHitPattern::Hira_CheckHitPattern()
+Hira_CheckHitPattern::Hira_CheckHitPattern(string SystemTagTem, string RunTagTem, string Hira_BadMap_VersionTem)
 {
+  SystemTag = SystemTagTem;
+  RunTag = RunTagTem;
+  Hira_BadMap_Version = Hira_BadMap_VersionTem;
+  
   h1_WholeHira_Multi_Dis = 0;
   for(int i=0;i<2;i++)
   {
@@ -15,39 +19,73 @@ Hira_CheckHitPattern::Hira_CheckHitPattern()
     }
   }
   IsActive_BadMap = 0;
+  IsHistoInitialized = 0;
 }
 
 Hira_CheckHitPattern::~Hira_CheckHitPattern()
 {;}
 
-void Hira_CheckHitPattern::ReadExpData(int FileNum, string ExpFileName[],string RootFileNameForStore)
+void Hira_CheckHitPattern::SetAnaTag(string SystemTagTem, string RunTagTem, string Hira_BadMap_VersionTem)
+{
+  SystemTag = SystemTagTem;
+  RunTag = RunTagTem;
+  Hira_BadMap_Version = Hira_BadMap_VersionTem;
+}
+
+void Hira_CheckHitPattern::InitialHisto()
+{
+  if(IsHistoInitialized==0)
+  {
+    h1_WholeHira_Multi_Dis = new TH1D("h1_WholeHira_Multi_Dis",";Multi;Count",20,0,20);
+    string ConfigTag[2] = {"noBadMap","withBadMap"};
+    char NameTem[200];
+    for(int i=0;i<2;i++)
+    {
+      h2_WholeHira_Theta_Phi_Lab[i] = new TH2D(("h2_WholeHira_Theta_Phi_Lab"+ConfigTag[i]).c_str(),";#theta_{Lab}(Deg.);#phi_{Lab}(Deg.)",600,20,80,1000,150,250);;
+      for(int j=0;j<12;j++)
+      {
+        sprintf(NameTem,"h2_Hira%d_Theta_Phi_Lab_%s",j,ConfigTag[i].c_str());
+        h2_1Hira_Theta_Phi_Lab[j][i] = new TH2D(NameTem,";#theta_{Lab}(Deg.);#phi_{Lab}(Deg.)",600,20,80,1000,150,250);
+        sprintf(NameTem,"h1_Hira%d_Theta_HitCount_%s",j,ConfigTag[i].c_str());
+        h1_1Hira_Theta_HitCount[j][i] = new TH1D(NameTem,";#theta_{Lab};Count",120,20,80);
+        sprintf(NameTem,"h1_Hira%d_Theta_HitCount_NormalizedWithPixelNum_%s",j,ConfigTag[i].c_str());
+        h1_1Hira_Theta_HitCount_NormalizedWithPixelNum[j][i] = new TH1D(NameTem,";#theta_{Lab};Count",120,20,80);
+      }
+    }
+  }
+  else
+  {
+    h1_WholeHira_Multi_Dis->Reset();
+    for(int i=0;i<2;i++)
+    {
+      h2_WholeHira_Theta_Phi_Lab[i]->Reset();
+      for(int j=0;j<12;j++)
+      {
+        h2_1Hira_Theta_Phi_Lab[j][i]->Reset();
+        h1_1Hira_Theta_HitCount[j][i]->Reset();
+        h1_1Hira_Theta_HitCount_NormalizedWithPixelNum[j][i]->Reset();
+      }
+    }
+  }
+  IsHistoInitialized = 1;
+}
+
+void Hira_CheckHitPattern::ReadExpData(int FileNum, string ExpFileName[],string RootFilePathForStore)
 {
   if(Hira_BadMapper==0) { cout<<"Attention: the Hira_BadMapper==0 !!!, you need to set the BadMapper!"<<endl; }
   
   //Initial the histogram for storing.
-  h1_WholeHira_Multi_Dis = new TH1D("h1_WholeHira_Multi_Dis",";Multi;Count",20,0,20);;
-  string ConfigTag[2] = {"noBadMap","withBadMap"};
+  InitialHisto();
   
   char NameTem[200];
-  for(int i=0;i<2;i++)
-  {
-    h2_WholeHira_Theta_Phi_Lab[i] = new TH2D(("h2_WholeHira_Theta_Phi_Lab"+ConfigTag[i]).c_str(),";#theta_{Lab}(Deg.);#phi_{Lab}(Deg.)",600,20,80,1000,150,250);;
-    for(int j=0;j<12;j++)
-    {
-      sprintf(NameTem,"h2_Hira%d_Theta_Phi_Lab_%s",j,ConfigTag[i].c_str());
-      h2_1Hira_Theta_Phi_Lab[j][i] = new TH2D(NameTem,";#theta_{Lab}(Deg.);#phi_{Lab}(Deg.)",600,20,80,1000,150,250);
-      sprintf(NameTem,"h1_Hira%d_Theta_HitCount_%s",j,ConfigTag[i].c_str());
-      h1_1Hira_Theta_HitCount[j][i] = new TH1D(NameTem,";#theta_{Lab};Count",120,20,80);
-      sprintf(NameTem,"h1_Hira%d_Theta_HitCount_NormalizedWithPixelNum_%s",j,ConfigTag[i].c_str());
-      h1_1Hira_Theta_HitCount_NormalizedWithPixelNum[j][i] = new TH1D(NameTem,";#theta_{Lab};Count",120,20,80);
-    }
-  }
-  
   //reading the data.
   TChain* t1_Data = new TChain("E15190");
   for(int i=0;i<FileNum;i++)
   {
     cout<<"Reading "<<ExpFileName[i]<<"  ...  "<<endl;
+    ifstream infile(ExpFileName[i]);
+    if(!infile.good()) { continue; }
+    else { infile.close(); }
     t1_Data->AddFile(ExpFileName[i].c_str());
   }
   
@@ -101,7 +139,9 @@ void Hira_CheckHitPattern::ReadExpData(int FileNum, string ExpFileName[],string 
   }
   
   //store the histogram for each run.
-  TFile* f1_Hira_HitPattern_Checking = new TFile(RootFileNameForStore.c_str(),"update");
+  string FileFroStore = RootFilePathForStore+"/f1_HitPattern_"+SystemTag+"_"+RunTag+"_"+Hira_BadMap_Version+".root";
+  
+  TFile* f1_Hira_HitPattern_Checking = new TFile(FileFroStore.c_str(),"update");
   h1_WholeHira_Multi_Dis->Write("",TObject::kOverwrite);
   h2_WholeHira_Theta_Phi_Lab[0]->Write("",TObject::kOverwrite);
   h2_WholeHira_Theta_Phi_Lab[1]->Write("",TObject::kOverwrite);
@@ -114,7 +154,7 @@ void Hira_CheckHitPattern::ReadExpData(int FileNum, string ExpFileName[],string 
     h2_1Hira_Theta_Phi_Lab[i][0]->Write("",TObject::kOverwrite);
     h2_1Hira_Theta_Phi_Lab[i][1]->Write("",TObject::kOverwrite);
   }
-  f1_Hira_HitPattern_Checking->Close();
+  f1_Hira_HitPattern_Checking->Close(); //this root file must be closed for the next run analysis.
 }
 
 void Hira_CheckHitPattern::GetNormalized_CountNum(TH1D* h1_Count,TH1D* h1_Count_Normalized,TH2D* h2_Pixel_Dis)
