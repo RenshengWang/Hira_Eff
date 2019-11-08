@@ -9,7 +9,7 @@ void _1_CheckHitPattern()
   string SystemTag = "Ca40Ni58E140";
   string RunTag = "2850-2870";
   
-  string Hira_BadMap_Version = "V1";
+  string Hira_BadMap_Version = "V2";
   
   Hira_BadMap* Hira_BadMapper = new Hira_BadMap();
   Hira_BadMapper->Read_BadMap_Strip("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_Strip_"+Hira_BadMap_Version+".dat");
@@ -22,7 +22,7 @@ void _1_CheckHitPattern()
   Hira_HitPattern_Checker->Initial_Hira_BadMapper(Hira_BadMapper);
   Hira_HitPattern_Checker->SetAnaTag(SystemTag,RunTag,Hira_BadMap_Version);
   
-  const int ExpFileNum = 1;
+  const int ExpFileNum = 20;
   string ExpFileNameList[ExpFileNum];
   char NameTem[200];
   for(int i=0;i<ExpFileNum;i++)
