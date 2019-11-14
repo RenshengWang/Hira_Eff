@@ -1,35 +1,38 @@
 void _3_Draw_PID_ESpec()
 {
-/*
+  string DataPath = "/mnt/analysis/e15190/Brown/rootfiles";
+  string Hira_BadMap_FilePath = "./GeoEff";
+  int ImpactPar_Num = 2;
+  double ImpactPars[20][2] = {{0,3.0},{3.0,5.0}};
+  string ESpecStoreFilePath = "./ESpec";
+  string ExpFileNameList[200];
+  
+  //the below is for setting the data file.  
   string SystemTag = "Ca40Ni58E140";
-  int StartRunNo = 2850;
-  const int ExpFileNum = 20;
-  string RunTag = "2850-2870";
-  string Hira_BadMap_Version = "V2";
-*/
-
+  int StartRunNo = 2587;
+  int EndRunNo = 2611;
+  const int ExpFileNum = EndRunNo-StartRunNo+1;
+  string RunTag = std::to_string(StartRunNo)+"-"+std::to_string(EndRunNo);
+  string Hira_BadMap_Version = "V2.1";
+   
+/*
   string SystemTag = "Ca48Ni64E140";
   int StartRunNo = 4023;
   const int ExpFileNum = 10;
   string RunTag = "4023-4032";
   string Hira_BadMap_Version = "V1";
-
-  int ImpactPar_Num = 2;
-  double ImpactPars[20][2] = {{0,3.0},{3.0,5.0}};
-  string ESpecStoreFilePath = "./ESpec";
-  
-  string ExpFileNameList[ExpFileNum];
+*/
   char NameTem[200];
-  for(int i=0;i<ExpFileNum;i++)
+  int FileIndex = 0;
+  for(int i=StartRunNo;i<=EndRunNo;i++)
   {
-    sprintf(NameTem,"/mnt/analysis/e15190/Brown/rootfiles/CalibratedData_%d.root",StartRunNo+i);
-    ExpFileNameList[i] = NameTem;
+    sprintf(NameTem,"%s/CalibratedData_%d.root",DataPath.c_str(),i);
+    ExpFileNameList[FileIndex] = NameTem;
+    FileIndex++;
   }
   
   Hira_BadMap* Hira_BadMapper = new Hira_BadMap();
-  Hira_BadMapper->Read_BadMap_Strip("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_Strip_"+Hira_BadMap_Version+".dat");
-  Hira_BadMapper->Read_BadMap_CsI("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_CsI_"+Hira_BadMap_Version+".dat");
-  Hira_BadMapper->Read_BadMap_Tele("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_Tele_"+Hira_BadMap_Version+".dat");
+  Hira_BadMapper->Set_BadMapper_Version(Hira_BadMap_FilePath, Hira_BadMap_Version);
   
   Hira_GeoEff* Hira_GeoEfficiency = new Hira_GeoEff();
   Hira_GeoEfficiency->ReadGeoEffHistogram(("./GeoEff/f1_GeoEff_"+Hira_BadMap_Version+".root").c_str());
@@ -54,5 +57,4 @@ void _3_Draw_PID_ESpec()
   
   Hira_ESpectrum->Draw_ESpec_Info();
   Hira_ESpectrum->Draw_ReactionEff();
-  
 }
