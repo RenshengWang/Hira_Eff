@@ -81,14 +81,18 @@ void Hira_CheckHitPattern::ReadExpData(int FileNum, string ExpFileName[],string 
   char NameTem[200];
   //reading the data.
   TChain* t1_Data = new TChain("E15190");
+  int FileNum_Existed = 0;
   for(int i=0;i<FileNum;i++)
   {
-    cout<<"Reading "<<ExpFileName[i]<<"  ...  "<<endl;
+    cout<<"Reading "<<ExpFileName[i]<<" : ";
     ifstream infile(ExpFileName[i]);
-    if(!infile.good()) { continue; }
-    else { infile.close(); }
+    if(!infile.good()) { cout<< " Not Existed! "<<endl; continue; }
+    else { cout<< " Existed! "<<endl; infile.close(); }
+    
     t1_Data->AddFile(ExpFileName[i].c_str());
+    FileNum_Existed++;
   }
+  cout<<" ---> Existed File Num: "<<FileNum_Existed<<endl;
   
   Int_t fmulti;
   double fTheta[200]; double fPhi[200]; 
