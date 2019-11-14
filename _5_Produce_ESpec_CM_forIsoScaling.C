@@ -1,6 +1,6 @@
 TH1D* Get_ThetaDis(int Index,double Ekin_Theta_CM_Range[][4],TH2D* h2_Theta_Ekin_CM);
 
-void _4_Check_Theta_CM()
+void _5_Produce_ESpec_CM_forIsoScaling()
 {
 /*
   string SystemTag = "Ca40Ni58E140";
@@ -56,7 +56,7 @@ void _4_Check_Theta_CM()
   */
   const int ThetaNum = 1;
   double StartTheta = 80;
-  double ThetaBinSize = 25;
+  double ThetaBinSize = 20;
   TH1D* h1_ESpec_PID[ParticleNum][ThetaNum];
   EkinTheta_Spec->SetThetaConfig(ThetaNum, StartTheta, ThetaBinSize);
   
@@ -66,15 +66,20 @@ void _4_Check_Theta_CM()
     EkinTheta_Spec->ProduceEkinSpectrum(h2_Theta_Ekin_CM_GeoReactionEff[i],h1_ESpec_PID[i]);
     EkinTheta_Spec->DrawInfo();
   }
-  
+
   //store in the root file for further analysis.
-  sprintf(NameTem,"./ESpec/f1_ESpec_%s_%s_%s_b_%.1f_%.1f.root",SystemTag.c_str(),RunTag.c_str(),Hira_BadMap_Version.c_str(),ImpactPar_Range[0],ImpactPar_Range[1]);
-  TFile* f1_ESpec = new TFile(NameTem,"update");
-  for(int i=0;i<ThetaNum;i++)
+  sprintf(NameTem,"./IsoScaling/f1_ESpec_%s_%s_%s_b_%.1f_%.1f.root",SystemTag.c_str(),RunTag.c_str(),Hira_BadMap_Version.c_str(),ImpactPar_Range[0],ImpactPar_Range[1]);
+  TFile* f1_ESpec_ForIsoScaling = new TFile(NameTem,"update");
+  
+  for(int iPID=0;iPID<ParticleNum;iPID++)
   {
-    h2_Theta_Ekin_CM_GeoReactionEff[2]->Write("",TObject::kOverwrite);
-    h1_ESpec_T[i]->Write("",TObject::kOverwrite);
-    h2_Theta_Ekin_CM_GeoReactionEff[3]->Write("",TObject::kOverwrite);
-    h1_ESpec_3He[i]->Write("",TObject::kOverwrite);
+    h2_Theta_Ekin_CM_GeoReactionEff[iPID]->Write("",TObject::kOverwrite);
+    h2_Theta_Ekin_CM_GeoReactionEff[iPID]->Write("",TObject::kOverwrite);
+    for(int i=0;i<ThetaNum;i++)
+    {
+       h1_ESpec_PID[iPID][i]->Write("",TObject::kOverwrite);
+       h1_ESpec_PID[iPID][i]->Write("",TObject::kOverwrite);
+     }
   }
+
 }
