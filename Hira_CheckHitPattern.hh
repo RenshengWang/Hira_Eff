@@ -14,6 +14,7 @@
 #include "TCutG.h"
 #include "Hira_BadMap.hh"
 #include "TChain.h"
+#include "Hira_PosCali.hh"
 
 using namespace std;
 using namespace TMath;
@@ -27,6 +28,12 @@ public:
   string RunTag;
   string Hira_BadMap_Version;
   void SetAnaTag(string SystemTagTem, string RunTagTem, string Hira_BadMap_VersionTem);
+  
+  bool Is_HiraPos_Applied;
+  void Set_Is_HiraPos_Applied(bool tem) { Is_HiraPos_Applied = tem; }
+  Hira_PosCali* HiraPos;
+  void Initial_Hira_PosCali(Hira_PosCali* tem) { HiraPos = tem; Is_HiraPos_Applied=1; }
+  
   
   Hira_BadMap* Hira_BadMapper;
   bool IsActive_BadMap;

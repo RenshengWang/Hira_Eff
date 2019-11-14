@@ -1,14 +1,84 @@
 #include "Hira_ESpec.hh"
 ClassImp(Hira_ESpec);
 
-Hira_ESpec::Hira_ESpec()
+Hira_ESpec::Hira_ESpec(string SystemTagTem,string RunTagTem,string Hira_BadMap_VersionTem)
 {
+  SystemTag = SystemTagTem;
+  RunTag = RunTagTem;
+  Hira_BadMap_Version = Hira_BadMap_VersionTem;
+  Initial_LabToCM(SystemTag);
+  
   Hira_BadMapper = 0;
   Hira_GeoEfficiency = 0;
+  Is_HiraPos_Applied = 1;
+  IsSelect_ImpactPar = 0;
+  ImpactNum = 0;
+  uBall_MultiCut = 5;
 }
 
 Hira_ESpec::~Hira_ESpec()
 {;}
+
+void Hira_ESpec::SetAnaTag(string SystemTagTem, string RunTagTem, string Hira_BadMap_VersionTem)
+{
+  SystemTag = SystemTagTem;
+  RunTag = RunTagTem;
+  Hira_BadMap_Version = Hira_BadMap_VersionTem;
+  Initial_LabToCM(SystemTag);
+}
+
+void Hira_ESpec::Initial_LabToCM(string SystemTagTem)
+{
+  SystemTag = SystemTagTem;
+  
+  CurrentSystemIndex = -1;
+  SystemNum = 16;
+  double Mass_1u = 931.49410242;
+  
+  const int BeamNum = 2; 
+  string BeamTag[BeamNum] = {"Ca40","Ca48"};
+  double BeamMass[BeamNum] = {39.962590866*Mass_1u,47.95252290*Mass_1u};
+  int BeamA[BeamNum] = {40,48};
+  
+  const int TargetNum = 4; 
+  string TargetTag[TargetNum] = {"Ni58","Ni64","Sn112","Sn124"};
+  double TargetMass[TargetNum] = {57.935343*Mass_1u,63.9279660*Mass_1u,111.904818*Mass_1u,123.9052739*Mass_1u};
+  
+  const int BeamEnergyNum = 2; 
+  double BeamEnergy[BeamEnergyNum] = {56,140}; //MeV/A
+  
+  char NameTem[200];
+  for(int iBeam=0;iBeam<BeamNum;iBeam++)
+  {
+    for(int iTarget=0;iTarget<TargetNum;iTarget++)
+    {
+      for(int iEnergy=0;iEnergy<BeamEnergyNum;iEnergy++)
+      {
+        int SystemIndex = iBeam*TargetNum*BeamEnergyNum+iTarget*BeamEnergyNum+iEnergy;
+        
+        sprintf(NameTem,"%s%sE%.0f",BeamTag[iBeam].c_str(),TargetTag[iTarget].c_str(),BeamEnergy[iEnergy]);
+        SystemTag_All[SystemIndex] = NameTem;
+        BetaZ_LabToCM[SystemIndex] = GetBetaZ_LabToCM(BeamMass[iBeam],TargetMass[iTarget],BeamA[iBeam]*BeamEnergy[iEnergy]);
+        cout<<"SystemIndex : "<<SystemIndex<<"  "<<SystemTag_All[iBeam*TargetNum*BeamEnergyNum+iTarget*BeamEnergyNum+iEnergy]<<"  "<<BetaZ_LabToCM[SystemIndex]<<endl;
+        if(SystemTagTem==SystemTag_All[SystemIndex]) { CurrentSystemIndex = SystemIndex; }
+        BetaVector_LabToCM[SystemIndex].SetXYZ(0,0,-BetaZ_LabToCM[SystemIndex]);
+      }
+    }
+  }
+  cout<<SystemTagTem<<"  CurrentSystemIndex : "<<CurrentSystemIndex<<" BetaZ_LabToCM : "<<BetaZ_LabToCM[CurrentSystemIndex]<<endl;
+  if(CurrentSystemIndex==-1) { cout<<"***"<<SystemTagTem<<" is not found in this class***"<<endl; }
+}
+
+void Hira_ESpec::Set_ImpactPar_Range(int Num, double Pars[20][2])
+{
+  ImpactNum = Num;
+  for(int i=0;i<ImpactNum;i++)
+  {
+    ImpactPar_Range[i][0] = Pars[i][0]; 
+    ImpactPar_Range[i][1] = Pars[i][1];
+  }
+  IsSelect_ImpactPar = 1; 
+}
 
 void Hira_ESpec::Initial_ESpecHisto()
 {
@@ -48,21 +118,75 @@ void Hira_ESpec::Initial_ESpecHisto()
       h1_Hira_ESpec_Lab_GeoReactionEff[i][iTheta_Lab] = new TH1D(NameTem,";Ekin_{Lab}(MeV/u);Count",200,0,200);
     }
 
+    //the 2-D ESpec @ CM
     sprintf(NameTem,"h2_%s_Theta_Ekin_CM_GeoReactionEff",ParticleName[i].c_str());
-    h2_Theta_Ekin_CM_GeoReactionEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV);#theta_{CM}(Deg.)",300,0,300,180,0,180);
+    h2_Theta_Ekin_CM_GeoReactionEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV/A);#theta_{CM}(Deg.)",200,0,200,180,0,180);
     
     sprintf(NameTem,"h2_%s_Theta_Ekin_CM_GeoEff",ParticleName[i].c_str());
-    h2_Theta_Ekin_CM_GeoEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV);#theta_{CM}(Deg.)",300,0,300,180,0,180);
+    h2_Theta_Ekin_CM_GeoEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV/A);#theta_{CM}(Deg.)",200,0,200,180,0,180);
 
     sprintf(NameTem,"h2_%s_Theta_Ekin_CM_noEff",ParticleName[i].c_str());
-    h2_Theta_Ekin_CM_noEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV);#theta_{CM}(Deg.)",300,0,300,180,0,180);
+    h2_Theta_Ekin_CM_noEff[i] = new TH2D(NameTem,";Ekin_{CM}(MeV/A);#theta_{CM}(Deg.)",200,0,200,180,0,180);
+    
+    //the 2-D ESpec @ Lab
+    sprintf(NameTem,"h2_%s_Theta_Ekin_Lab_GeoReactionEff",ParticleName[i].c_str());
+    h2_Theta_Ekin_Lab_GeoReactionEff[i] = new TH2D(NameTem,";Ekin_{Lab}(MeV/A);#theta_{Lab}(Deg.)",200,0,200,180,0,180);
+    
+    sprintf(NameTem,"h2_%s_Theta_Ekin_Lab_GeoEff",ParticleName[i].c_str());
+    h2_Theta_Ekin_Lab_GeoEff[i] = new TH2D(NameTem,";Ekin_{Lab}(MeV/A);#theta_{Lab}(Deg.)",200,0,200,180,0,180);
+
+    sprintf(NameTem,"h2_%s_Theta_Ekin_Lab_noEff",ParticleName[i].c_str());
+    h2_Theta_Ekin_Lab_noEff[i] = new TH2D(NameTem,";Ekin_{Lab}(MeV/A);#theta_{Lab}(Deg.)",200,0,200,180,0,180);
   }
   
   h1_Hira_ThetaLab_Dis = new TH1D("h1_Hira_ThetaLab_Dis",";#theta_{Lab}(Deg.);Count",600,20,80);
   h2_PID_ZA = new TH2D("h2_PID_ZA",";ParticleZ;ParticleA",10,0,10,10,0,10);
+  
+  //the below is for seting the impact parameters.
+  h1_ImpactPar = new TH1D("h1_ImpactPar",";b(fm);Count",100,0,10);
+  h1_ImpactPar_WithHiraCount = new TH1D("h1_ImpactPar_WithHiraCount",";b(fm);Count",100,0,10);
+  h2_Impact_uBallMulti = new TH2D("h2_Impact_uBallMulti",";uBall_Multi;b(fm)",100,-10,90,200,-10,10);
+   
+  for(int ii=0;ii<ImpactNum;ii++)
+  {
+    for(int iP=0;iP<ParticleNum;iP++)
+    {
+      //the below is for the 2-D histogram in the CM.
+      sprintf(NameTem,"h2_%s_b_%.1f_%.1f_Theta_Ekin_CM_GeoReactionEff_ImpactPars",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1]);
+      h2_Theta_Ekin_CM_GeoReactionEff_ImpactPars[ii][iP] = new TH2D(NameTem,";Ekin_{CM}(MeV/A);#theta_{CM}(Deg.)",200,0,200,180,0,180);
+      
+      sprintf(NameTem,"h2_%s_b_%.1f_%.1f_Theta_Ekin_CM_GeoEff_ImpactPars",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1]);
+      h2_Theta_Ekin_CM_GeoEff_ImpactPars[ii][iP] = new TH2D(NameTem,";Ekin_{CM}(MeV/A);#theta_{CM}(Deg.)",200,0,200,180,0,180);
+      
+      sprintf(NameTem,"h2_%s_b_%.1f_%.1f_Theta_Ekin_CM_noEff_ImpactPars",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1]);
+      h2_Theta_Ekin_CM_noEff_ImpactPars[ii][iP] = new TH2D(NameTem,";Ekin_{CM}(MeV/A);#theta_{CM}(Deg.)",200,0,200,180,0,180);
+      
+      //the below is for the 2-D histogram in the lab.
+      sprintf(NameTem,"h2_%s_b_%.1f_%.1f_Theta_Ekin_Lab_GeoReactionEff_ImpactPars",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1]);
+      h2_Theta_Ekin_Lab_GeoReactionEff_ImpactPars[ii][iP] = new TH2D(NameTem,";Ekin_{Lab}(MeV/A);#theta_{Lab}(Deg.)",200,0,200,180,0,180);
+      
+      sprintf(NameTem,"h2_%s_b_%.1f_%.1f_Theta_Ekin_Lab_GeoEff_ImpactPars",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1]);
+      h2_Theta_Ekin_Lab_GeoEff_ImpactPars[ii][iP] = new TH2D(NameTem,";Ekin_{Lab}(MeV/A);#theta_{Lab}(Deg.)",200,0,200,180,0,180);
+      
+      sprintf(NameTem,"h2_%s_b_%.1f_%.1f_Theta_Ekin_Lab_noEff_ImpactPars",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1]);
+      h2_Theta_Ekin_Lab_noEff_ImpactPars[ii][iP] = new TH2D(NameTem,";Ekin_{Lab}(MeV/A);#theta_{Lab}(Deg.)",200,0,200,180,0,180);
+      
+      //the below is for defining the 1-D ESpec@Lab.
+      for(int iTheta_Lab=0;iTheta_Lab<Num_Theta_Lab_ForChecking;iTheta_Lab++)
+      {
+         double R1 = Theta_Lab_Range_ForChecking[iTheta_Lab][0]; 
+         double R2 = Theta_Lab_Range_ForChecking[iTheta_Lab][1];
+         sprintf(NameTem,"h1_%s_b_%.1f_%.1f_Hira_ESpec_Lab_GeoEff_Theta_%.1f_%.0f",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1],R1,R2);
+         h1_Hira_ESpec_Lab_GeoEff_ImpactPars[ii][iP][iTheta_Lab] = new TH1D(NameTem,";Ekin_{Lab}(MeV/u);Count",200,0,200);
+      
+         sprintf(NameTem,"h1_%s_b_%.1f_%.1f_Hira_ESpec_Lab_GeoReactionEff_Theta_%.1f_%.0f",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1],R1,R2);
+         h1_Hira_ESpec_Lab_GeoReactionEff_ImpactPars[ii][iP][iTheta_Lab] = new TH1D(NameTem,";Ekin_{Lab}(MeV/u);Count",200,0,200);
+      }
+    }
+  }
 }
 
-void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FileForStore)
+void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePathForStore)
 {
   if(Hira_BadMapper==0) { cout<<"Hira_BadMapper==0"<<endl; return; }
   if(Hira_GeoEfficiency==0) { cout<<"Hira_GeoEfficiency==0"<<endl; return; }
@@ -72,10 +196,14 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FileForS
   TChain* t1_Data = new TChain("E15190");
   for(int i=0;i<ExpFileNum;i++)
   {
+    ifstream infile(ExpDataFile[i]);
+    if(!infile.good()) { continue; }
+    else { infile.close(); }
     t1_Data->AddFile(ExpDataFile[i].c_str());
   }
   
-  Int_t fmulti;
+  Int_t Hira_fmulti;
+  double uBall_fb; int uBall_fmulti;
   double fTheta[200]; double fPhi[200]; 
   int fnumtel[200]; int fnumstripf[200]; int fnumstripb[200];
   double fEnergySifCal[200]; double fEnergySibCal[200]; 
@@ -85,7 +213,9 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FileForS
   
   t1_Data->SetMakeClass(1);
   t1_Data->SetBranchStatus("*",0);
-  t1_Data->SetBranchAddress("HiRA.fmulti",&fmulti);
+  t1_Data->SetBranchAddress("uBall.fb",&uBall_fb);
+  t1_Data->SetBranchAddress("uBall.fmulti",&uBall_fmulti);
+  t1_Data->SetBranchAddress("HiRA.fmulti",&Hira_fmulti);
   t1_Data->SetBranchAddress("HiRA.fnumtel",fnumtel);
   t1_Data->SetBranchAddress("HiRA.fnumstripf",fnumstripf);
   t1_Data->SetBranchAddress("HiRA.fnumstripb",fnumstripb);
@@ -104,8 +234,23 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FileForS
     if(iEvt%100000==0) { cout<<"iEvt: "<<iEvt<<endl; }
     t1_Data->GetEntry(iEvt);
     
-    if(fmulti<=0) { continue; }
-    for(int iP=0;iP<fmulti;iP++)
+    if(uBall_fmulti<uBall_MultiCut) { continue; } //make a 1st level cut for the uBall.
+    h1_ImpactPar->Fill(uBall_fb);
+    
+    if(Hira_fmulti<=0) { continue; } //this class is only used to analyze Hira.
+    h1_ImpactPar_WithHiraCount->Fill(uBall_fb);
+    
+    h2_Impact_uBallMulti->Fill(uBall_fmulti,uBall_fb);
+    
+    int Index_ImpactPar = -1;
+    for(int iI=0;iI<ImpactNum;iI++)
+    {
+      if(uBall_fb>ImpactPar_Range[iI][0] && uBall_fb<ImpactPar_Range[iI][1])
+      { Index_ImpactPar=iI; break; }
+    }
+    if(IsSelect_ImpactPar==0) { Index_ImpactPar = -1; }
+    
+    for(int iP=0;iP<Hira_fmulti;iP++)
     {
       bool IsBad_Hira = Hira_BadMapper->IsBad_Hira(fnumtel[iP]);
       bool IsBad_CsI = Hira_BadMapper->IsBad_CsI(fnumtel[iP],fnumstripf[iP],fnumstripb[iP]);
@@ -121,14 +266,19 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FileForS
             double P_Mag_Lab = Sqrt(fKinEnergy[iP]*fKinEnergy[iP]+2*fKinEnergy[iP]*ParticleMass[iPID]);
             TVector3 P_3D_Lab(0,0,P_Mag_Lab);
             
-            P_3D_Lab.SetTheta(fTheta[iP]);
-            P_3D_Lab.SetPhi(fPhi[iP]);
+            if(Is_HiraPos_Applied==0)
+            {
+              P_3D_Lab.SetTheta(fTheta[iP]);
+              P_3D_Lab.SetPhi(fPhi[iP]);
+            }
             
-            /*
-            P_3D_Lab.SetTheta(HiraPos->GetTheta(fnumtel[iP],fnumstripf[iP],fnumstripb[iP])*DegToRad());
-            P_3D_Lab.SetPhi(HiraPos->GetPhi(fnumtel[iP],fnumstripf[iP],fnumstripb[iP])*DegToRad());
-            */
+            if(Is_HiraPos_Applied==1)
+            {
+              P_3D_Lab.SetTheta(HiraPos->GetTheta(fnumtel[iP],fnumstripf[iP],fnumstripb[iP])*DegToRad());
+              P_3D_Lab.SetPhi(HiraPos->GetPhi(fnumtel[iP],fnumstripf[iP],fnumstripb[iP])*DegToRad());
+            }
             double Theta_Lab = P_3D_Lab.Theta()*RadToDeg();
+            double Ekin_Lab = fKinEnergy[iP];
             
             TLorentzVector P_4D_CM(P_3D_Lab,ParticleMass[iPID]+fKinEnergy[iP]);
             P_4D_CM.Boost(BetaVector_LabToCM[CurrentSystemIndex]);
@@ -150,13 +300,47 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FileForS
             
             if(EffGeo>=GeoEff_Cut)
             {
-              h2_Theta_Ekin_CM_GeoEff[iPID]->Fill(Ekin_CM,Theta_CM,1.0/EffGeo);
-              if(ReactionEff>0.01) { h2_Theta_Ekin_CM_GeoReactionEff[iPID]->Fill(Ekin_CM,Theta_CM,1.0/(EffGeo*ReactionEff)); }
-              h2_Theta_Ekin_CM_noEff[iPID]->Fill(Ekin_CM,Theta_CM);
+              h2_Theta_Ekin_CM_GeoEff[iPID]->Fill(Ekin_CM/ParticleA[iPID],Theta_CM,1.0/EffGeo);
+              h2_Theta_Ekin_Lab_GeoEff[iPID]->Fill(Ekin_Lab/ParticleA[iPID],Theta_Lab,1.0/EffGeo);
+              if(Index_ImpactPar!=-1)
+              {
+                h2_Theta_Ekin_CM_GeoEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_CM/ParticleA[iPID],Theta_CM,1.0/EffGeo);
+                h2_Theta_Ekin_Lab_GeoEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_Lab/ParticleA[iPID],Theta_Lab,1.0/EffGeo);
+              }
+              
+              if(ReactionEff>0.01) 
+              {
+                h2_Theta_Ekin_CM_GeoReactionEff[iPID]->Fill(Ekin_CM/ParticleA[iPID],Theta_CM,1.0/(EffGeo*ReactionEff));
+                h2_Theta_Ekin_Lab_GeoReactionEff[iPID]->Fill(Ekin_Lab/ParticleA[iPID],Theta_Lab,1.0/(EffGeo*ReactionEff));
+                if(Index_ImpactPar!=-1)
+                {
+                  h2_Theta_Ekin_CM_GeoReactionEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_CM/ParticleA[iPID],Theta_CM,1.0/(EffGeo*ReactionEff));
+                  h2_Theta_Ekin_Lab_GeoReactionEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_Lab/ParticleA[iPID],Theta_Lab,1.0/(EffGeo*ReactionEff));
+                }
+              }
+              h2_Theta_Ekin_CM_noEff[iPID]->Fill(Ekin_CM/ParticleA[iPID],Theta_CM);
+              h2_Theta_Ekin_Lab_noEff[iPID]->Fill(Ekin_Lab/ParticleA[iPID],Theta_Lab);
+              if(Index_ImpactPar!=-1)
+              {
+                h2_Theta_Ekin_CM_noEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_CM/ParticleA[iPID],Theta_CM);
+                h2_Theta_Ekin_Lab_noEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_Lab/ParticleA[iPID],Theta_Lab);
+              }
+              
               if(ThetaLab_Index!=-1)
               {
                 h1_Hira_ESpec_Lab_GeoEff[iPID][ThetaLab_Index]->Fill(fKinEnergy[iP]/ParticleA[iPID],1.0/EffGeo);
-                if(ReactionEff>0.01) { h1_Hira_ESpec_Lab_GeoReactionEff[iPID][ThetaLab_Index]->Fill(fKinEnergy[iP]/ParticleA[iPID],1.0/(EffGeo*ReactionEff)); }
+                if(Index_ImpactPar!=-1)
+                {
+                  h1_Hira_ESpec_Lab_GeoEff_ImpactPars[Index_ImpactPar][iPID][ThetaLab_Index]->Fill(fKinEnergy[iP]/ParticleA[iPID],1.0/EffGeo);
+                } 
+                if(ReactionEff>0.01) 
+                { 
+                  h1_Hira_ESpec_Lab_GeoReactionEff[iPID][ThetaLab_Index]->Fill(fKinEnergy[iP]/ParticleA[iPID],1.0/(EffGeo*ReactionEff));
+                  if(Index_ImpactPar!=-1)
+                  {
+                    h1_Hira_ESpec_Lab_GeoReactionEff_ImpactPars[Index_ImpactPar][iPID][ThetaLab_Index]->Fill(fKinEnergy[iP]/ParticleA[iPID],1.0/(EffGeo*ReactionEff));
+                  }
+                }
               }
               break;
             }
@@ -166,7 +350,7 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FileForS
     }
   }
   
-  TFile* f1_ESpec = new TFile(FileForStore.c_str(),"update");
+  TFile* f1_ESpec = new TFile((FilePathForStore+"/f1_ESpec_"+SystemTag+"_"+RunTag+"_"+Hira_BadMap_Version+".root").c_str(),"update");
   f1_ESpec->cd();
   for(int iPID=0;iPID<ParticleNum;iPID++)
   {
@@ -174,13 +358,36 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FileForS
     h2_Theta_Ekin_CM_noEff[iPID]->Write("",TObject::kOverwrite);
     h2_Theta_Ekin_CM_GeoReactionEff[iPID]->Write("",TObject::kOverwrite);
     
+    h2_Theta_Ekin_Lab_GeoEff[iPID]->Write("",TObject::kOverwrite);
+    h2_Theta_Ekin_Lab_noEff[iPID]->Write("",TObject::kOverwrite);
+    h2_Theta_Ekin_Lab_GeoReactionEff[iPID]->Write("",TObject::kOverwrite);
+    
+    for(int iI=0;iI<ImpactNum;iI++)
+    {
+      h2_Theta_Ekin_CM_GeoEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
+      h2_Theta_Ekin_CM_noEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
+      h2_Theta_Ekin_CM_GeoReactionEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
+      
+      h2_Theta_Ekin_Lab_GeoEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
+      h2_Theta_Ekin_Lab_noEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
+      h2_Theta_Ekin_Lab_GeoReactionEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
+    }
+    
     for(int iTheta_Lab=0;iTheta_Lab<Num_Theta_Lab_ForChecking;iTheta_Lab++)
-    { 
+    {
       h1_Hira_ESpec_Lab_GeoEff[iPID][iTheta_Lab]->Write("",TObject::kOverwrite); 
-      h1_Hira_ESpec_Lab_GeoReactionEff[iPID][iTheta_Lab]->Write("",TObject::kOverwrite); 
+      h1_Hira_ESpec_Lab_GeoReactionEff[iPID][iTheta_Lab]->Write("",TObject::kOverwrite);
+      for(int iI=0;iI<ImpactNum;iI++)
+      {
+        h1_Hira_ESpec_Lab_GeoEff_ImpactPars[iI][iPID][iTheta_Lab]->Write("",TObject::kOverwrite); 
+        h1_Hira_ESpec_Lab_GeoReactionEff_ImpactPars[iI][iPID][iTheta_Lab]->Write("",TObject::kOverwrite);
+      }
     }
   }
   h1_Hira_ThetaLab_Dis->Write("",TObject::kOverwrite);
+  h1_ImpactPar->Write("",TObject::kOverwrite);
+  h2_Impact_uBallMulti->Write("",TObject::kOverwrite);
+  h1_ImpactPar_WithHiraCount->Write("",TObject::kOverwrite);
   f1_ESpec->Close();
 }
 
@@ -238,50 +445,19 @@ void Hira_ESpec::Draw_ESpec_Info()
   
   TCanvas* c1_PID_ZA = new TCanvas("c1_PID_ZA","c1_PID_ZA",1);
   h2_PID_ZA->Draw("colz");
+  
+  TCanvas* c1_Impact = new TCanvas("c1_Impact","c1_Impact",1);
+  c1_Impact->Divide(3,1);
+  c1_Impact->cd(1); h2_Impact_uBallMulti->Draw("colz");
+  c1_Impact->cd(2); h1_ImpactPar->Draw("hist");
+  c1_Impact->cd(3); h1_ImpactPar_WithHiraCount->Draw("hist");
+  
 //  TCanvas* c1_Hira_ThetaLab_Dis = new TCanvas("c1_Hira_ThetaLab_Dis","c1_Hira_ThetaLab_Dis",1);
 //  h1_Hira_ThetaLab_Dis->Draw("hist");
   
 }
 
-void Hira_ESpec::Initial_LabToCM(string SystemTagTem)
-{
-  CurrentSystemIndex = -1;
-  SystemNum = 16;
-  double Mass_1u = 931.49410242;
-  
-  const int BeamNum = 2; 
-  string BeamTag[BeamNum] = {"Ca40","Ca48"};
-  double BeamMass[BeamNum] = {39.962590866*Mass_1u,47.95252290*Mass_1u};
-  int BeamA[BeamNum] = {40,48};
-  
-  const int TargetNum = 4; 
-  string TargetTag[TargetNum] = {"Ni58","Ni64","Sn112","Sn124"};
-  double TargetMass[TargetNum] = {57.935343*Mass_1u,63.9279660*Mass_1u,111.904818*Mass_1u,123.9052739*Mass_1u};
-  
-  const int BeamEnergyNum = 2; 
-  double BeamEnergy[BeamEnergyNum] = {56,140}; //MeV/A
-  
-  char NameTem[200];
-  for(int iBeam=0;iBeam<BeamNum;iBeam++)
-  {
-    for(int iTarget=0;iTarget<TargetNum;iTarget++)
-    {
-      for(int iEnergy=0;iEnergy<BeamEnergyNum;iEnergy++)
-      {
-        int SystemIndex = iBeam*TargetNum*BeamEnergyNum+iTarget*BeamEnergyNum+iEnergy;
-        
-        sprintf(NameTem,"%s%sE%.0f",BeamTag[iBeam].c_str(),TargetTag[iTarget].c_str(),BeamEnergy[iEnergy]);
-        SystemTag[SystemIndex] = NameTem;
-        BetaZ_LabToCM[SystemIndex] = GetBetaZ_LabToCM(BeamMass[iBeam],TargetMass[iTarget],BeamA[iBeam]*BeamEnergy[iEnergy]);
-        cout<<"SystemIndex : "<<SystemIndex<<"  "<<SystemTag[iBeam*TargetNum*BeamEnergyNum+iTarget*BeamEnergyNum+iEnergy]<<"  "<<BetaZ_LabToCM[SystemIndex]<<endl;
-        if(SystemTagTem==SystemTag[SystemIndex]) { CurrentSystemIndex = SystemIndex; }
-        BetaVector_LabToCM[SystemIndex].SetXYZ(0,0,-BetaZ_LabToCM[SystemIndex]);
-      }
-    }
-  }
-  cout<<SystemTagTem<<"  CurrentSystemIndex : "<<CurrentSystemIndex<<" BetaZ_LabToCM : "<<BetaZ_LabToCM[CurrentSystemIndex]<<endl;
-  if(CurrentSystemIndex==-1) { cout<<"***"<<SystemTagTem<<" is not found in this class***"<<endl; }
-}
+
 
 void Hira_ESpec::Initial_ReactionLost_CorEff()
 {

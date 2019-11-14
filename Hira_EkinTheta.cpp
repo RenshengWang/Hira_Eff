@@ -95,7 +95,7 @@ void Hira_EkinTheta::ProduceEkinSpectrum(TH2D* h2_Ekin_Theta,TH1D** h1_EkinCM_te
         {
           if(h2_Ekin_Theta->GetBinContent(iEBin,iTBin)==0) { IsFullFill=0; break; }
         }
-        if(IsFullFill==0 && iEBin<100)
+        if(IsFullFill==0 && iEBin<10)
         {
           for(int iTBin=Bin1;iTBin<=Bin2;iTBin++)
           { h2_Ekin_Theta_forEkinDis->SetBinContent(iEBin,iTBin,0); }

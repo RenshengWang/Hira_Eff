@@ -20,6 +20,7 @@ Hira_CheckHitPattern::Hira_CheckHitPattern(string SystemTagTem, string RunTagTem
   }
   IsActive_BadMap = 0;
   IsHistoInitialized = 0;
+  Is_HiraPos_Applied=1;
 }
 
 Hira_CheckHitPattern::~Hira_CheckHitPattern()
@@ -107,7 +108,7 @@ void Hira_CheckHitPattern::ReadExpData(int FileNum, string ExpFileName[],string 
   
   for(int iEvt = 0;iEvt<EvtNum;iEvt++)
   {
-    if(iEvt%100000==0) { cout<<"iEvt: "<<iEvt<<endl; }
+    if(iEvt%1000000==0) { cout<<"iEvt: "<<iEvt<<endl; }
     t1_Data->GetEntry(iEvt);
     h1_WholeHira_Multi_Dis->Fill(fmulti);
     
@@ -118,15 +119,24 @@ void Hira_CheckHitPattern::ReadExpData(int FileNum, string ExpFileName[],string 
       bool IsBad_StripX = Hira_BadMapper->IsBad_StripX(fnumtel[iP],fnumstripf[iP]);
       bool IsBad_StripY = Hira_BadMapper->IsBad_StripY(fnumtel[iP],fnumstripb[iP]);
       
-      h2_WholeHira_Theta_Phi_Lab[0]->Fill(fTheta[iP]*RadToDeg(),fPhi[iP]*RadToDeg());
-      h1_1Hira_Theta_HitCount[fnumtel[iP]][0]->Fill(fTheta[iP]*RadToDeg());
-      h2_1Hira_Theta_Phi_Lab[fnumtel[iP]][0]->Fill(fTheta[iP]*RadToDeg(),fPhi[iP]*RadToDeg());
+      double Theta = fTheta[iP]*RadToDeg();
+      double Phi = fPhi[iP]*RadToDeg();
+      
+      if(Is_HiraPos_Applied==1)
+      {
+        Theta = HiraPos->GetTheta(fnumtel[iP],fnumstripf[iP],fnumstripb[iP]);
+        Phi = HiraPos->GetPhi(fnumtel[iP],fnumstripf[iP],fnumstripb[iP]);
+      }
+      
+      h2_WholeHira_Theta_Phi_Lab[0]->Fill(Theta,Phi);
+      h1_1Hira_Theta_HitCount[fnumtel[iP]][0]->Fill(Theta);
+      h2_1Hira_Theta_Phi_Lab[fnumtel[iP]][0]->Fill(Theta,Phi);
       
       if(IsActive_BadMap==1 && IsBad_Hira==0 && IsBad_CsI==0 && IsBad_StripX==0 && IsBad_StripY==0)
       {
-        h2_WholeHira_Theta_Phi_Lab[1]->Fill(fTheta[iP]*RadToDeg(),fPhi[iP]*RadToDeg());
-        h1_1Hira_Theta_HitCount[fnumtel[iP]][1]->Fill(fTheta[iP]*RadToDeg());
-        h2_1Hira_Theta_Phi_Lab[fnumtel[iP]][1]->Fill(fTheta[iP]*RadToDeg(),fPhi[iP]*RadToDeg());
+        h2_WholeHira_Theta_Phi_Lab[1]->Fill(Theta,Phi);
+        h1_1Hira_Theta_HitCount[fnumtel[iP]][1]->Fill(Theta);
+        h2_1Hira_Theta_Phi_Lab[fnumtel[iP]][1]->Fill(Theta,Phi);
       }
     }
   }
