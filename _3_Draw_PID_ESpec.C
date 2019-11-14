@@ -9,11 +9,10 @@ void _3_Draw_PID_ESpec()
 */
 
   string SystemTag = "Ca48Ni64E140";
-  int StartRunNo = 4083;
-  const int ExpFileNum = 40;
-  string RunTag = "4083-4123";
+  int StartRunNo = 4023;
+  const int ExpFileNum = 10;
+  string RunTag = "4023-4032";
   string Hira_BadMap_Version = "V1";
-
 
   int ImpactPar_Num = 2;
   double ImpactPars[20][2] = {{0,3.0},{3.0,5.0}};

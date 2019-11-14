@@ -12,21 +12,21 @@ void _1_CheckHitPattern()
   string RunTag = "2600-2600";
   string Hira_BadMap_Version = "V2";
 */
-/*
+
   string SystemTag = "Ca40Ni58E140";
-  int StartRunNo = 2848;
-  const int ExpFileNum = 23;
-  string RunTag = "2848-2870";
-  string Hira_BadMap_Version = "V2";
-*/
+  int StartRunNo = 2587;
+  const int ExpFileNum = 25;
+  string RunTag = "2587-2611";
+  string Hira_BadMap_Version = "V2.1";
 
 
+/*
   string SystemTag = "Ca48Ni64E140";
   int StartRunNo = 4023;
   const int ExpFileNum = 10;
   string RunTag = "4023-4032";
   string Hira_BadMap_Version = "V1";
-
+*/
   
   string DataPath = "/mnt/analysis/e15190/Brown/rootfiles";
   
