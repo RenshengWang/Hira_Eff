@@ -22,6 +22,10 @@ public:
   Hira_BadMap();
   ~Hira_BadMap();
   
+  string Hira_BadMap_Version;
+  string Hira_BadMap_FilePath;
+  void Set_BadMapper_Version(string MapPath, string Version); 
+  
   bool IsShowInfo;
   void Set_IsShowInfo(bool tem) { IsShowInfo = tem; }
   

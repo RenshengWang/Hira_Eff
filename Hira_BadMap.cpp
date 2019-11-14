@@ -9,6 +9,16 @@ Hira_BadMap::Hira_BadMap()
 Hira_BadMap::~Hira_BadMap()
 {;}
 
+void Hira_BadMap::Set_BadMapper_Version(string MapPath, string Version)
+{
+  Hira_BadMap_Version = Version;
+  Hira_BadMap_FilePath = MapPath;
+  
+  Read_BadMap_Strip(Hira_BadMap_FilePath+"/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_Strip_"+Hira_BadMap_Version+".dat");
+  Read_BadMap_CsI(Hira_BadMap_FilePath+"/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_CsI_"+Hira_BadMap_Version+".dat");
+  Read_BadMap_Tele(Hira_BadMap_FilePath+"/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_Tele_"+Hira_BadMap_Version+".dat");
+}
+
 void Hira_BadMap::Read_BadMap_Strip(string FileName)
 {
   for(int i=0;i<12;i++)
