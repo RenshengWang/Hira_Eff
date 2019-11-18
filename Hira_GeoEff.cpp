@@ -125,7 +125,12 @@ void Hira_GeoEff::Cal_GeoEff(TH1D* h1_Count,TH1D* h1_GeoEff,int TotalSimEvtNum)
   
   for(int i=1;i<=BinNum;i++)
   {
-    h1_GeoEff->SetBinContent(i,h1_Count->GetBinContent(i)/(Phi_Eff*Theta_Eff*BinSize));
+    double BinContent = h1_Count->GetBinContent(i);
+    double BinContent_RelErr = 0;
+    if(BinContent!=0) { BinContent_RelErr = Sqrt(BinContent)/BinContent; }
+    double GeoEff = BinContent/(Phi_Eff*Theta_Eff*BinSize);
+    h1_GeoEff->SetBinContent(i,GeoEff);
+    h1_GeoEff->SetBinError(i,GeoEff*BinContent_RelErr); //the relative error is same with the count error;
   }
 }
 
