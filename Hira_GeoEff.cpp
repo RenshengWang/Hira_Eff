@@ -136,12 +136,49 @@ void Hira_GeoEff::Cal_GeoEff(TH1D* h1_Count,TH1D* h1_GeoEff,int TotalSimEvtNum)
 
 void Hira_GeoEff::Draw_Info()
 {
-  if(h2_WholeHira_Theta_Phi_Lab!=0) { TCanvas* c1_tem = new TCanvas("c1_WholeHira_Theta_Phi_Lab","c1_WholeHira_Theta_Phi_Lab",1); h2_WholeHira_Theta_Phi_Lab->Draw("colz"); }
-  if(h2_BadMap_Theta_Phi_Lab!=0) { TCanvas* c1_tem = new TCanvas("c1_BadMap_Theta_Phi_Lab","c1_BadMap_Theta_Phi_Lab",1); h2_BadMap_Theta_Phi_Lab->Draw("colz"); }
-  if(h2_noBadMap_Theta_Phi_Lab!=0) { TCanvas* c1_tem = new TCanvas("c1_noBadMap_Theta_Phi_Lab","c1_noBadMap_Theta_Phi_Lab",1); h2_noBadMap_Theta_Phi_Lab->Draw("colz"); }
-  if(h1_BadMap_Theta_Lab_HitCount!=0) { TCanvas* c1_tem = new TCanvas("c1_BadMap_Theta_Lab_HitCount","c1_BadMap_Theta_Lab_HitCount",1); h1_BadMap_Theta_Lab_HitCount->Draw("hist"); }
-  if(h1_BadMap_Theta_Lab_Eff!=0) { TCanvas* c1_tem = new TCanvas("c1_BadMap_Theta_Lab_Eff","c1_BadMap_Theta_Lab_Eff",1); h1_BadMap_Theta_Lab_Eff->Draw("colz"); }
-  if(h1_HiraHit_Multi!=0) { TCanvas* c1_tem = new TCanvas("c1_HiraHit_Multi","c1_HiraHit_Multi",1); h1_HiraHit_Multi->Draw("colz"); }
+  string Hira_BadMap_Version = "";
+  if(Hira_BadMapper!=0)
+  {
+    Hira_BadMap_Version = Hira_BadMapper->Get_BadMapper_Version();
+  }
+  
+  char NameTem[200];
+  if(h2_WholeHira_Theta_Phi_Lab!=0) 
+  { 
+    sprintf(NameTem,"c1_%s_WholeHira_Theta_Phi_Lab",Hira_BadMap_Version.c_str());
+    TCanvas* c1_tem = new TCanvas(NameTem,NameTem,1);
+    h2_WholeHira_Theta_Phi_Lab->Draw("colz"); 
+  }
+  if(h2_BadMap_Theta_Phi_Lab!=0) 
+  { 
+    sprintf(NameTem,"c1_%s_BadMap_Theta_Phi_Lab",Hira_BadMap_Version.c_str());
+    TCanvas* c1_tem = new TCanvas(NameTem,NameTem,1);
+    h2_BadMap_Theta_Phi_Lab->Draw("colz"); 
+  }
+  if(h2_noBadMap_Theta_Phi_Lab!=0) 
+  { 
+    sprintf(NameTem,"c1_%s_noBadMap_Theta_Phi_Lab",Hira_BadMap_Version.c_str());
+    TCanvas* c1_tem = new TCanvas(NameTem,NameTem,1);
+    h2_noBadMap_Theta_Phi_Lab->Draw("colz");
+  }
+  if(h1_BadMap_Theta_Lab_HitCount!=0) 
+  {
+    sprintf(NameTem,"c1_%s_BadMap_Theta_Lab_HitCount",Hira_BadMap_Version.c_str());
+    TCanvas* c1_tem = new TCanvas(NameTem,NameTem,1);
+    h1_BadMap_Theta_Lab_HitCount->Draw("hist"); 
+  }
+  if(h1_BadMap_Theta_Lab_Eff!=0) 
+  { 
+    sprintf(NameTem,"c1_%s_BadMap_Theta_Lab_Eff",Hira_BadMap_Version.c_str());
+    TCanvas* c1_tem = new TCanvas(NameTem,NameTem,1);
+    h1_BadMap_Theta_Lab_Eff->Draw("hist"); 
+  }
+  if(h1_HiraHit_Multi!=0) 
+  { 
+    sprintf(NameTem,"c1_%s_HiraHit_Multi",Hira_BadMap_Version.c_str());
+    TCanvas* c1_tem = new TCanvas(NameTem,NameTem,1);
+    h1_HiraHit_Multi->Draw("hist"); 
+  }
 }
 
 void Hira_GeoEff::ReadGeoEffHistogram(string RootFileName)
