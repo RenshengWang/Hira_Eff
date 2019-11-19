@@ -130,7 +130,7 @@ void Hira_GeoEff::Cal_GeoEff(TH1D* h1_Count,TH1D* h1_GeoEff,int TotalSimEvtNum)
     if(BinContent!=0) { BinContent_RelErr = Sqrt(BinContent)/BinContent; }
     double GeoEff = BinContent/(Phi_Eff*Theta_Eff*BinSize);
     h1_GeoEff->SetBinContent(i,GeoEff);
-    h1_GeoEff->SetBinError(i,GeoEff*BinContent_RelErr); //the relative error is same with the count error;
+    h1_GeoEff->SetBinError(i,GeoEff*BinContent_RelErr); //the relative error is same with the ;
   }
 }
 
@@ -146,7 +146,7 @@ void Hira_GeoEff::Draw_Info()
 
 void Hira_GeoEff::ReadGeoEffHistogram(string RootFileName)
 {
-  f1_Results = new TFile(RootFileName.c_str(),"read");
+  f1_Results = new TFile(RootFileName.c_str(),"update");
   h1_BadMap_Theta_Lab_Eff = (TH1D*) f1_Results->Get("h1_BadMap_Theta_Lab_Eff");
   if(h1_BadMap_Theta_Lab_Eff!=0) { cout<<"Get the GeoEff Correction histogram!"<<endl; }
   h2_WholeHira_Theta_Phi_Lab = (TH2D*) f1_Results->Get("h2_WholeHira_Theta_Phi_Lab");

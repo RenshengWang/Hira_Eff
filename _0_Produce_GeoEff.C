@@ -29,7 +29,7 @@ void _0_Produce_GeoEff()
   {//the below is for producing the GeoEff
     Hira_GeoEfficiency->Initial_Hira_BadMapper(Hira_BadMapper);
     Hira_GeoEfficiency->Initial_Hira_PosCali(HiraPos);
-    Hira_GeoEfficiency->Set_IsApplyPixelAngle(0);
+    Hira_GeoEfficiency->Set_IsApplyPixelAngle(1);
     
     string SimFileName = SimData_Path+"/myResult_"+SimConfigTag+".root";
     Hira_GeoEfficiency->ReadSimData(SimFileName,RootFileNameForStore);
