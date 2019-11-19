@@ -194,13 +194,18 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
   Initial_ESpecHisto();
   
   TChain* t1_Data = new TChain("E15190");
+  int FileNum_Existed = 0;
   for(int i=0;i<ExpFileNum;i++)
   {
+    cout<<"Reading "<<ExpDataFile[i]<<" : ";
     ifstream infile(ExpDataFile[i]);
-    if(!infile.good()) { continue; }
-    else { infile.close(); }
+    if(!infile.good()) { cout<< " Not Existed! "<<endl; continue; }
+    else { cout<< " Existed! "<<endl; infile.close(); }
     t1_Data->AddFile(ExpDataFile[i].c_str());
+    
+    FileNum_Existed++;
   }
+  cout<<" ---> Existed File Num: "<<FileNum_Existed<<endl;
   
   Int_t Hira_fmulti;
   double uBall_fb; int uBall_fmulti;

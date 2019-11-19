@@ -15,10 +15,10 @@ void _1_CheckHitPattern()
 
   string SystemTag = "Ca40Ni58E140";
   int StartRunNo = 2587;
-  const int ExpFileNum = 25;
-  string RunTag = "2587-2611";
+  int EndRunNo = 2611;
+  const int ExpFileNum = EndRunNo-StartRunNo+1;
+  string RunTag = std::to_string(StartRunNo)+"-"+std::to_string(EndRunNo);
   string Hira_BadMap_Version = "V2.1";
-
 
 /*
   string SystemTag = "Ca48Ni64E140";
@@ -29,11 +29,11 @@ void _1_CheckHitPattern()
 */
   
   string DataPath = "/mnt/analysis/e15190/Brown/rootfiles";
+  string Hira_BadMap_FilePath = "./GeoEff";
+  string HitPattern_OutputPath = "./GeoEff";
   
   Hira_BadMap* Hira_BadMapper = new Hira_BadMap();
-  Hira_BadMapper->Read_BadMap_Strip("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_Strip_"+Hira_BadMap_Version+".dat");
-  Hira_BadMapper->Read_BadMap_CsI("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_CsI_"+Hira_BadMap_Version+".dat");
-  Hira_BadMapper->Read_BadMap_Tele("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_Tele_"+Hira_BadMap_Version+".dat");
+  Hira_BadMapper->Set_BadMapper_Version(Hira_BadMap_FilePath, Hira_BadMap_Version); //this will read the map data automatically.
   
   Hira_PosCali* HiraPos = new Hira_PosCali();
   HiraPos->Read_Hira_PixelAngle("./Cal_PixelAngle/PixelAngle_BeamPos_0_0_0.dat");
@@ -53,6 +53,6 @@ void _1_CheckHitPattern()
     ExpFileNameList[i] = NameTem;
   }
   
-  Hira_HitPattern_Checker->ReadExpData(ExpFileNum,ExpFileNameList,"./GeoEff");
+  Hira_HitPattern_Checker->ReadExpData(ExpFileNum,ExpFileNameList,HitPattern_OutputPath);
   Hira_HitPattern_Checker->Draw_Info();
 }

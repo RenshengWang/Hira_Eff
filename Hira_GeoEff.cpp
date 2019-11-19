@@ -146,7 +146,7 @@ void Hira_GeoEff::Draw_Info()
 
 void Hira_GeoEff::ReadGeoEffHistogram(string RootFileName)
 {
-  f1_Results = new TFile(RootFileName.c_str(),"update");
+  f1_Results = new TFile(RootFileName.c_str(),"read");
   h1_BadMap_Theta_Lab_Eff = (TH1D*) f1_Results->Get("h1_BadMap_Theta_Lab_Eff");
   if(h1_BadMap_Theta_Lab_Eff!=0) { cout<<"Get the GeoEff Correction histogram!"<<endl; }
   h2_WholeHira_Theta_Phi_Lab = (TH2D*) f1_Results->Get("h2_WholeHira_Theta_Phi_Lab");
