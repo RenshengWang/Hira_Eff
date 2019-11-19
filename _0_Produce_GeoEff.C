@@ -4,14 +4,15 @@ using namespace TMath;
 void _0_Produce_GeoEff()
 {
   bool Is_ProduceGeoEff = 1;
-  string SimData_Path = "/home/zhong/Packages/nptool/Outputs/Simulation/Hira10";
+  bool Is_ApplyPixelAngle = 1;
+  string SimData_Path = "../NPTool/Outputs/Simulation/Hira10";
   string SimConfigTag = "ThetaUniform";
   string Hira_BadMap_Version = "V1";
   
+  string Hira_BadMap_FilePath = "./GeoEff";
   Hira_BadMap* Hira_BadMapper = new Hira_BadMap();
-  Hira_BadMapper->Read_BadMap_Strip("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_Strip_"+Hira_BadMap_Version+".dat");
-  Hira_BadMapper->Read_BadMap_CsI("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_CsI_"+Hira_BadMap_Version+".dat");
-  Hira_BadMapper->Read_BadMap_Tele("./GeoEff/BadMap_"+Hira_BadMap_Version+"/Hira_BadMap_Tele_"+Hira_BadMap_Version+".dat");
+  Hira_BadMapper->Set_BadMapper_Version(Hira_BadMap_FilePath, Hira_BadMap_Version); //this will read the map data automatically.
+
   
   Hira_PosCali* HiraPos = new Hira_PosCali();
   HiraPos->Read_Hira_PixelAngle("./Cal_PixelAngle/PixelAngle_BeamPos_0_0_0.dat");
@@ -29,7 +30,7 @@ void _0_Produce_GeoEff()
   {//the below is for producing the GeoEff
     Hira_GeoEfficiency->Initial_Hira_BadMapper(Hira_BadMapper);
     Hira_GeoEfficiency->Initial_Hira_PosCali(HiraPos);
-    Hira_GeoEfficiency->Set_IsApplyPixelAngle(1);
+    Hira_GeoEfficiency->Set_IsApplyPixelAngle(Is_ApplyPixelAngle);
     
     string SimFileName = SimData_Path+"/myResult_"+SimConfigTag+".root";
     Hira_GeoEfficiency->ReadSimData(SimFileName,RootFileNameForStore);
