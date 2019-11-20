@@ -8,20 +8,22 @@ void _3_Draw_PID_ESpec()
   string ExpFileNameList[200];
   
   //the below is for setting the data file.  
+/*
   string SystemTag = "Ca40Ni58E140";
   int StartRunNo = 2587;
   int EndRunNo = 2611;
   const int ExpFileNum = EndRunNo-StartRunNo+1;
   string RunTag = std::to_string(StartRunNo)+"-"+std::to_string(EndRunNo);
   string Hira_BadMap_Version = "V2.1";
-   
-/*
+*/
+
   string SystemTag = "Ca48Ni64E140";
   int StartRunNo = 4023;
-  const int ExpFileNum = 10;
-  string RunTag = "4023-4032";
+  int EndRunNo = 4032;
+  const int ExpFileNum = EndRunNo-StartRunNo+1;
+  string RunTag = std::to_string(StartRunNo)+"-"+std::to_string(EndRunNo);
   string Hira_BadMap_Version = "V1";
-*/
+
   char NameTem[200];
   int FileIndex = 0;
   for(int i=StartRunNo;i<=EndRunNo;i++)
@@ -44,7 +46,7 @@ void _3_Draw_PID_ESpec()
   Hira_ESpectrum->Initial_Hira_BadMapper(Hira_BadMapper);
   Hira_ESpectrum->Initial_Hira_GeoEff(Hira_GeoEfficiency);
   Hira_ESpectrum->Initial_Hira_PosCali(HiraPos);
-  Hira_ESpectrum->Set_Is_HiraPos_Applied(1);
+  Hira_ESpectrum->Set_Is_HiraPos_Applied(1); //this option should be actived.
   Hira_ESpectrum->SetAnaTag(SystemTag,RunTag,Hira_BadMap_Version);
   Hira_ESpectrum->Set_ImpactPar_Range(ImpactPar_Num,ImpactPars);
   
