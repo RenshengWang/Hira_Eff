@@ -35,7 +35,7 @@ void Hira_ESpec::Initial_LabToCM(string SystemTagTem)
   SystemNum = 16;
   double Mass_1u = 931.49410242;
   
-  const int BeamNum = 2; 
+  const int BeamNum = 2;
   string BeamTag[BeamNum] = {"Ca40","Ca48"};
   double BeamMass[BeamNum] = {39.962590866*Mass_1u,47.95252290*Mass_1u};
   int BeamA[BeamNum] = {40,48};
@@ -234,26 +234,29 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
   int EvtNum = t1_Data->GetEntries();
   cout<<" EvtNum : "<<EvtNum<<endl;
   
+  //before counting the event number, set it to 0;
+  EvtNum_Within_uBall_MultiCut = 0; 
+  for(int iI=0;iI<ImpactNum;iI++) { EvtNum_ForDiffImpact[iI] = 0; }
+  
   for(int iEvt = 0;iEvt<EvtNum;iEvt++)
   {
     if(iEvt%100000==0) { cout<<"iEvt: "<<iEvt<<endl; }
     t1_Data->GetEntry(iEvt);
+    h2_Impact_uBallMulti->Fill(uBall_fmulti,uBall_fb);
     
     if(uBall_fmulti<uBall_MultiCut) { continue; } //make a 1st level cut for the uBall.
     h1_ImpactPar->Fill(uBall_fb);
+    EvtNum_Within_uBall_MultiCut++;
     
-    if(Hira_fmulti<=0) { continue; } //this class is only used to analyze Hira.
-    h1_ImpactPar_WithHiraCount->Fill(uBall_fb);
-    
-    h2_Impact_uBallMulti->Fill(uBall_fmulti,uBall_fb);
+    if(Hira_fmulti>0) { h1_ImpactPar_WithHiraCount->Fill(uBall_fb); }
     
     int Index_ImpactPar = -1;
     for(int iI=0;iI<ImpactNum;iI++)
     {
       if(uBall_fb>ImpactPar_Range[iI][0] && uBall_fb<ImpactPar_Range[iI][1])
-      { Index_ImpactPar=iI; break; }
+      { Index_ImpactPar=iI; EvtNum_ForDiffImpact[iI]++; break; }
     }
-    if(IsSelect_ImpactPar==0) { Index_ImpactPar = -1; }
+    if(IsSelect_ImpactPar==0) { Index_ImpactPar = -1; } //this means, we didn't select the parameters.
     
     for(int iP=0;iP<Hira_fmulti;iP++)
     {
@@ -357,6 +360,32 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
   
   TFile* f1_ESpec = new TFile((FilePathForStore+"/f1_ESpec_"+SystemTag+"_"+RunTag+"_"+Hira_BadMap_Version+".root").c_str(),"update");
   f1_ESpec->cd();
+  
+  //the below is for showing and store event number information.
+  ofstream outfile((FilePathForStore+"/f1_ESpec_"+SystemTag+"_"+RunTag+"_"+Hira_BadMap_Version+"_EvtNum.data").c_str());
+  outfile<<"TotalEvtNum    "<<EvtNum<<endl;
+  outfile<<"uBall_MultiCutEvtNum    "<<EvtNum_Within_uBall_MultiCut<<endl;
+  for(int iI=0;iI<ImpactNum;iI++)
+  {
+    outfile<<"ib"<<iI<<"    "<<EvtNum_ForDiffImpact[iI]<<endl;
+  }
+  outfile<<endl<<endl;
+  
+  
+  cout<<"---***---"<<endl;
+  outfile<<"---***---"<<endl;
+  cout<<"  Total event number: "<<EvtNum<<endl;
+  outfile<<"  Total event number: "<<EvtNum<<endl;
+  cout<<"  EvtNum_Within_uBall_MultiCut (uBall_MultiCut>="<<uBall_MultiCut<<") : "<<EvtNum_Within_uBall_MultiCut<<endl;
+  outfile<<"  EvtNum_Within_uBall_MultiCut (uBall_MultiCut>="<<uBall_MultiCut<<") : "<<EvtNum_Within_uBall_MultiCut<<endl;
+  for(int iI=0;iI<ImpactNum;iI++)
+  {
+    cout<<"  Impact parameter ("<< ImpactPar_Range[iI][0]<<","<< ImpactPar_Range[iI][1]<<") : "<<EvtNum_ForDiffImpact[iI]<<endl;
+    outfile<<"  Impact parameter ("<< ImpactPar_Range[iI][0]<<","<< ImpactPar_Range[iI][1]<<") : "<<EvtNum_ForDiffImpact[iI]<<endl;
+  }
+  cout<<"---***---"<<endl;
+  outfile<<"---***---"<<endl;
+  
   for(int iPID=0;iPID<ParticleNum;iPID++)
   {
     h2_Theta_Ekin_CM_GeoEff[iPID]->Write("",TObject::kOverwrite);
@@ -380,12 +409,21 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
     
     for(int iTheta_Lab=0;iTheta_Lab<Num_Theta_Lab_ForChecking;iTheta_Lab++)
     {
+      double SolidAngle_Lab = 2*Pi()*(Cos(DegToRad()*Theta_Lab_Range_ForChecking[iTheta_Lab][0])-Cos(DegToRad()*Theta_Lab_Range_ForChecking[iTheta_Lab][1]));
+      
       h1_Hira_ESpec_Lab_GeoEff[iPID][iTheta_Lab]->Write("",TObject::kOverwrite); 
       h1_Hira_ESpec_Lab_GeoReactionEff[iPID][iTheta_Lab]->Write("",TObject::kOverwrite);
+      
+      h1_Hira_ESpec_Lab_GeoEff[iPID][iTheta_Lab]->GetYaxis()->SetTitle("Count");
+      h1_Hira_ESpec_Lab_GeoReactionEff[iPID][iTheta_Lab]->GetYaxis()->SetTitle("Count");
+      
       for(int iI=0;iI<ImpactNum;iI++)
       {
         h1_Hira_ESpec_Lab_GeoEff_ImpactPars[iI][iPID][iTheta_Lab]->Write("",TObject::kOverwrite); 
         h1_Hira_ESpec_Lab_GeoReactionEff_ImpactPars[iI][iPID][iTheta_Lab]->Write("",TObject::kOverwrite);
+        
+        h1_Hira_ESpec_Lab_GeoEff_ImpactPars[iI][iPID][iTheta_Lab]->GetYaxis()->SetTitle("Count");
+        h1_Hira_ESpec_Lab_GeoReactionEff_ImpactPars[iI][iPID][iTheta_Lab]->GetYaxis()->SetTitle("Count");
       }
     }
   }
@@ -457,8 +495,8 @@ void Hira_ESpec::Draw_ESpec_Info()
   c1_Impact->cd(2); h1_ImpactPar->Draw("hist");
   c1_Impact->cd(3); h1_ImpactPar_WithHiraCount->Draw("hist");
   
-//  TCanvas* c1_Hira_ThetaLab_Dis = new TCanvas("c1_Hira_ThetaLab_Dis","c1_Hira_ThetaLab_Dis",1);
-//  h1_Hira_ThetaLab_Dis->Draw("hist");
+  TCanvas* c1_Hira_ThetaLab_Dis = new TCanvas("c1_Hira_ThetaLab_Dis","c1_Hira_ThetaLab_Dis",1);
+  h1_Hira_ThetaLab_Dis->Draw("hist");
   
 }
 

@@ -41,6 +41,8 @@ public:
   TH2D* h2_Impact_uBallMulti;
   bool IsSelect_ImpactPar;
   int ImpactNum;
+  int EvtNum_Within_uBall_MultiCut;
+  int EvtNum_ForDiffImpact[20];
   int uBall_MultiCut;
   void Set_uBall_MultiCut(int tem) { uBall_MultiCut = tem; }
   double ImpactPar_Range[20][2];
