@@ -104,6 +104,10 @@ void Hira_EkinTheta::ProduceEkinSpectrum(TH2D* h2_Ekin_Theta,TH1D** h1_EkinCM_te
     
       sprintf(NameTem,"h1_%s_%s_%s_EkinCM_Dis_Theta_%.1f_%.1f",SystemTag.c_str(),RunTag.c_str(),ParticleTag.c_str(),ThetaRange[iT][0],ThetaRange[iT][1]);
       h1_EkinCM_Dis[iT] = h2_Ekin_Theta_forEkinDis->ProjectionX(NameTem,Bin1+1,Bin2-1);
+      
+      double SolidAngle = 2*Pi()*(Cos(DegToRad()*ThetaRange[iT][0])-Cos(DegToRad()*ThetaRange[iT][1]));
+      h1_EkinCM_Dis[iT]->Scale(1.0/SolidAngle);
+      h1_EkinCM_Dis[iT]->GetYaxis()->SetTitle("#frac{d^{2}M}{dEd#Omega}(MeV^{-1}Sr^{-1})");
       h1_EkinCM_tem[iT] = h1_EkinCM_Dis[iT];
     }
   }
