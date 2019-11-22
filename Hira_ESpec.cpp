@@ -59,13 +59,19 @@ void Hira_ESpec::Initial_LabToCM(string SystemTagTem)
         sprintf(NameTem,"%s%sE%.0f",BeamTag[iBeam].c_str(),TargetTag[iTarget].c_str(),BeamEnergy[iEnergy]);
         SystemTag_All[SystemIndex] = NameTem;
         BetaZ_LabToCM[SystemIndex] = GetBetaZ_LabToCM(BeamMass[iBeam],TargetMass[iTarget],BeamA[iBeam]*BeamEnergy[iEnergy]);
-        cout<<"SystemIndex : "<<SystemIndex<<"  "<<SystemTag_All[iBeam*TargetNum*BeamEnergyNum+iTarget*BeamEnergyNum+iEnergy]<<"  "<<BetaZ_LabToCM[SystemIndex]<<endl;
+        Rapidity_Beam_Lab[SystemIndex] = Get_BeamRapidity_Lab(BeamMass[iBeam],BeamA[iBeam]*BeamEnergy[iEnergy]);
+        cout<<"SystemIndex : "<<SystemIndex<<"  "
+            <<SystemTag_All[iBeam*TargetNum*BeamEnergyNum+iTarget*BeamEnergyNum+iEnergy]
+            <<" BetaZ_LabToCM: "<<BetaZ_LabToCM[SystemIndex]
+            <<" BeamRapidity_Lab: "<<Rapidity_Beam_Lab[SystemIndex]<<endl;
         if(SystemTagTem==SystemTag_All[SystemIndex]) { CurrentSystemIndex = SystemIndex; }
         BetaVector_LabToCM[SystemIndex].SetXYZ(0,0,-BetaZ_LabToCM[SystemIndex]);
       }
     }
   }
-  cout<<SystemTagTem<<"  CurrentSystemIndex : "<<CurrentSystemIndex<<" BetaZ_LabToCM : "<<BetaZ_LabToCM[CurrentSystemIndex]<<endl;
+  cout<<SystemTagTem<<"  CurrentSystemIndex : "<<CurrentSystemIndex
+      <<" BetaZ_LabToCM : "<<BetaZ_LabToCM[CurrentSystemIndex]
+      <<" BeamRapidity_Lab : "<< Rapidity_Beam_Lab[CurrentSystemIndex] <<endl;
   if(CurrentSystemIndex==-1) { cout<<"***"<<SystemTagTem<<" is not found in this class***"<<endl; }
 }
 
@@ -171,6 +177,17 @@ void Hira_ESpec::Initial_ESpecHisto()
       sprintf(NameTem,"h2_%s_b_%.1f_%.1f_Theta_Ekin_Lab_noEff_ImpactPars",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1]);
       h2_Theta_Ekin_Lab_noEff_ImpactPars[ii][iP] = new TH2D(NameTem,";Ekin_{Lab}(MeV/A);#theta_{Lab}(Deg.)",200,0,200,180,0,180);
       
+      //the below is for the 2-D histogram ( y/ybeam ~ Pt ) in the lab
+      sprintf(NameTem,"h2_%s_b_%.1f_%.1f_y_PtA_Lab_GeoReactionEff_ImpactPars",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1]);
+      h2_y_PtA_Lab_GeoReactionEff_ImpactPars[ii][iP] = new TH2D(NameTem,";y/y{beam-Lab};#P_{t}(MeV/u)",100,0,1.0,600,0,600);
+      
+      sprintf(NameTem,"h2_%s_b_%.1f_%.1f_y_PtA_Lab_GeoEff_ImpactPars",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1]);
+      h2_y_PtA_Lab_GeoEff_ImpactPars[ii][iP] = new TH2D(NameTem,";y/y{beam-Lab};#P_{t}(MeV/u)",100,0,1.0,600,0,600);
+      
+      sprintf(NameTem,"h2_%s_b_%.1f_%.1f_y_PtA_Lab_noEff_ImpactPars",ParticleName[iP].c_str(),ImpactPar_Range[ii][0],ImpactPar_Range[ii][1]);
+      h2_y_PtA_Lab_noEff_ImpactPars[ii][iP] = new TH2D(NameTem,";y/y{beam-Lab};#P_{t}(MeV/u)",100,0,1.0,600,0,600);
+      
+      
       //the below is for defining the 1-D ESpec@Lab.
       for(int iTheta_Lab=0;iTheta_Lab<Num_Theta_Lab_ForChecking;iTheta_Lab++)
       {
@@ -188,6 +205,7 @@ void Hira_ESpec::Initial_ESpecHisto()
 
 void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePathForStore)
 {
+
   if(Hira_BadMapper==0) { cout<<"Hira_BadMapper==0"<<endl; return; }
   if(Hira_GeoEfficiency==0) { cout<<"Hira_GeoEfficiency==0"<<endl; return; }
   
@@ -240,7 +258,7 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
   
   for(int iEvt = 0;iEvt<EvtNum;iEvt++)
   {
-    if(iEvt%100000==0) { cout<<"iEvt: "<<iEvt<<endl; }
+    if(iEvt%100000==0) { cout<<"iEvt: "<<iEvt<<"  -  "<<setw(3)<<1.0*iEvt/EvtNum<<endl; }
     t1_Data->GetEntry(iEvt);
     h2_Impact_uBallMulti->Fill(uBall_fmulti,uBall_fb);
     
@@ -288,7 +306,14 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
             double Theta_Lab = P_3D_Lab.Theta()*RadToDeg();
             double Ekin_Lab = fKinEnergy[iP];
             
+            double Pt_Lab = P_3D_Lab.Pt();//get the transverse momentum.
+            double Pt_A_Lab = Pt_Lab/fAId[iP];
+            
             TLorentzVector P_4D_CM(P_3D_Lab,ParticleMass[iPID]+fKinEnergy[iP]);
+            //Attention, the below rapidity must be get before the boost.
+            //the Rapidity_Lab already normalized to the beam rapidity.
+            double Rapidity_Lab = P_4D_CM.Rapidity()/Rapidity_Beam_Lab[CurrentSystemIndex];
+            
             P_4D_CM.Boost(BetaVector_LabToCM[CurrentSystemIndex]);
             TVector3 P_3D_CM(P_4D_CM(0),P_4D_CM(1),P_4D_CM(2));
             double Theta_CM = P_3D_CM.Theta()*RadToDeg();
@@ -314,6 +339,7 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
               {
                 h2_Theta_Ekin_CM_GeoEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_CM/ParticleA[iPID],Theta_CM,1.0/EffGeo);
                 h2_Theta_Ekin_Lab_GeoEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_Lab/ParticleA[iPID],Theta_Lab,1.0/EffGeo);
+                h2_y_PtA_Lab_GeoEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Rapidity_Lab,Pt_A_Lab,1.0/EffGeo);
               }
               
               if(ReactionEff>0.01) 
@@ -324,6 +350,7 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
                 {
                   h2_Theta_Ekin_CM_GeoReactionEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_CM/ParticleA[iPID],Theta_CM,1.0/(EffGeo*ReactionEff));
                   h2_Theta_Ekin_Lab_GeoReactionEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_Lab/ParticleA[iPID],Theta_Lab,1.0/(EffGeo*ReactionEff));
+                  h2_y_PtA_Lab_GeoReactionEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Rapidity_Lab,Pt_A_Lab,1.0/(EffGeo*ReactionEff));
                 }
               }
               h2_Theta_Ekin_CM_noEff[iPID]->Fill(Ekin_CM/ParticleA[iPID],Theta_CM);
@@ -332,6 +359,7 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
               {
                 h2_Theta_Ekin_CM_noEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_CM/ParticleA[iPID],Theta_CM);
                 h2_Theta_Ekin_Lab_noEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Ekin_Lab/ParticleA[iPID],Theta_Lab);
+                h2_y_PtA_Lab_noEff_ImpactPars[Index_ImpactPar][iPID]->Fill(Rapidity_Lab,Pt_A_Lab);
               }
               
               if(ThetaLab_Index!=-1)
@@ -357,7 +385,7 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
       }
     }
   }
-  
+
   TFile* f1_ESpec = new TFile((FilePathForStore+"/f1_ESpec_"+SystemTag+"_"+RunTag+"_"+Hira_BadMap_Version+".root").c_str(),"update");
   f1_ESpec->cd();
   
@@ -405,6 +433,10 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
       h2_Theta_Ekin_Lab_GeoEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
       h2_Theta_Ekin_Lab_noEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
       h2_Theta_Ekin_Lab_GeoReactionEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
+      
+      h2_y_PtA_Lab_GeoEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
+      h2_y_PtA_Lab_noEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
+      h2_y_PtA_Lab_GeoReactionEff_ImpactPars[iI][iPID]->Write("",TObject::kOverwrite);
     }
     
     for(int iTheta_Lab=0;iTheta_Lab<Num_Theta_Lab_ForChecking;iTheta_Lab++)
@@ -432,18 +464,14 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
   h2_Impact_uBallMulti->Write("",TObject::kOverwrite);
   h1_ImpactPar_WithHiraCount->Write("",TObject::kOverwrite);
   f1_ESpec->Close();
+
 }
 
+//this function is used to show the data on time, so you can glimpse it to make sure there are no mistake.
 void Hira_ESpec::Draw_ESpec_Info()
 {
-  TCanvas* c1_Ekin_Theta_CM_GeoReactionEff = new TCanvas("c1_Ekin_Theta_CM_GeoReactionEff","c1_Ekin_Theta_CM_GeoReactionEff",1);
-  c1_Ekin_Theta_CM_GeoReactionEff->Divide(3,2);
-  
-  TCanvas* c1_Ekin_Theta_CM_GeoEff = new TCanvas("c1_Ekin_Theta_CM_GeoEff","c1_Ekin_Theta_CM_GeoEff",1);
-  c1_Ekin_Theta_CM_GeoEff->Divide(3,2);
-  
-  TCanvas* c1_Ekin_Theta_CM_noEff = new TCanvas("c1_Ekin_Theta_CM_noEff","c1_Ekin_Theta_CM_noEff",1);
-  c1_Ekin_Theta_CM_noEff->Divide(3,2);
+  TCanvas* c1_Ekin_Theta_CM = new TCanvas("c1_Ekin_Theta_CM","c1_Ekin_Theta_CM",1);
+  c1_Ekin_Theta_CM->Divide(6,3);
   
   TCanvas* c1_Ekin_DiffTheta_Lab_GeoEff = new TCanvas("c1_Ekin_DiffTheta_Lab_GeoEff","c1_Ekin_DiffTheta_Lab_GeoEff",1);
   c1_Ekin_DiffTheta_Lab_GeoEff->Divide(3,2);
@@ -453,18 +481,17 @@ void Hira_ESpec::Draw_ESpec_Info()
   char NameTem[200];
   for(int iPID=0;iPID<ParticleNum;iPID++)
   {
-    c1_Ekin_Theta_CM_GeoReactionEff->cd(iPID+1)->SetGridx(1);
-    c1_Ekin_Theta_CM_GeoReactionEff->cd(iPID+1)->SetGridy(1);
-    h2_Theta_Ekin_CM_GeoReactionEff[iPID]->Draw("colz");
-    
-    c1_Ekin_Theta_CM_GeoEff->cd(iPID+1)->SetGridx(1);
-    c1_Ekin_Theta_CM_GeoEff->cd(iPID+1)->SetGridy(1);
-    h2_Theta_Ekin_CM_GeoEff[iPID]->Draw("colz");
-    
-    c1_Ekin_Theta_CM_noEff->cd(iPID+1)->SetGridx(1);
-    c1_Ekin_Theta_CM_noEff->cd(iPID+1)->SetGridy(1);
+    c1_Ekin_Theta_CM->cd(iPID+1)->SetGridx(1);
+    c1_Ekin_Theta_CM->cd(iPID+1)->SetGridy(1);
     h2_Theta_Ekin_CM_noEff[iPID]->Draw("colz");
     
+    c1_Ekin_Theta_CM->cd(iPID+6+1)->SetGridx(1);
+    c1_Ekin_Theta_CM->cd(iPID+6+1)->SetGridy(1);
+    h2_Theta_Ekin_CM_GeoEff[iPID]->Draw("colz");
+    
+    c1_Ekin_Theta_CM->cd(iPID+6+6+1)->SetGridx(1);
+    c1_Ekin_Theta_CM->cd(iPID+6+6+1)->SetGridy(1);
+    h2_Theta_Ekin_CM_GeoReactionEff[iPID]->Draw("colz");
     
     c1_Ekin_DiffTheta_Lab_GeoEff->cd(iPID+1)->SetLogy(1);
     for(int iTheta_Lab=0;iTheta_Lab<Num_Theta_Lab_ForChecking;iTheta_Lab++)
@@ -485,6 +512,24 @@ void Hira_ESpec::Draw_ESpec_Info()
   }
   c1_Ekin_DiffTheta_Lab_GeoEff->cd(ParticleNum);
   legend_DiffTheta_Lab->Draw();
+  
+  //the below is for setting the y~Pt_A.
+  if(IsSelect_ImpactPar==1)
+  {
+    for(int iI=0;iI<ImpactNum;iI++)
+    {
+      sprintf(NameTem,"c1_y_PtA_Lab_b_%.1f_%.1f",ImpactPar_Range[iI][0],ImpactPar_Range[iI][1]);
+      TCanvas* c1_y_PtA_Lab = new TCanvas(NameTem,NameTem,1);
+      c1_y_PtA_Lab->Divide(6,3);
+      for(int iPID=0;iPID<ParticleNum;iPID++)
+      {
+        c1_y_PtA_Lab->cd(iPID+1); h2_y_PtA_Lab_noEff_ImpactPars[iI][iPID]->Draw("colz");
+        c1_y_PtA_Lab->cd(iPID+1+6); h2_y_PtA_Lab_GeoEff_ImpactPars[iI][iPID]->Draw("colz");
+        c1_y_PtA_Lab->cd(iPID+1+6+6); h2_y_PtA_Lab_GeoReactionEff_ImpactPars[iI][iPID]->Draw("colz");
+      }
+    }
+  }
+  
   
   TCanvas* c1_PID_ZA = new TCanvas("c1_PID_ZA","c1_PID_ZA",1);
   h2_PID_ZA->Draw("colz");
@@ -542,7 +587,6 @@ void Hira_ESpec::Draw_ReactionEff()
     f1_ReactionLost_CorEff[iPID]->GetYaxis()->SetTitle("Eff_{Reaction}");
   }
   legend_ReactionEff->Draw();
-  
 }
 
 double Hira_ESpec::Get_ReactionLost_CorEff(int Z, int A, double Ekin_Total_Lab)
@@ -557,7 +601,7 @@ double Hira_ESpec::Get_ReactionLost_CorEff(int Z, int A, double Ekin_Total_Lab)
     }
   }
   if(Index!=-1) { return f1_ReactionLost_CorEff[Index]->Eval(Ekin_Total_Lab); }
-  else { return 1; }
+  else { return f1_ReactionLost_CorEff[ReactionLost_Cor_ParticleNum-1]->Eval(Ekin_Total_Lab); } //the others are set to same with the last particle( always is alpha ).
 }
 
 double Hira_ESpec::GetBetaZ_LabToCM(double BMass,double TMass, double BEnergy)
@@ -566,4 +610,13 @@ double Hira_ESpec::GetBetaZ_LabToCM(double BMass,double TMass, double BEnergy)
   double BeamGamma = (BEnergy+BMass)/BMass;
   double Beta = BeamMomentum/(BeamGamma*BMass+TMass);
 return Beta;
+}
+
+double Hira_ESpec::Get_BeamRapidity_Lab(double BMass,double BEnergy)
+{
+  double BeamMomentum = Sqrt(BEnergy*BEnergy+2*BEnergy*BMass);
+  TLorentzVector BeamLabTem(0,0,BeamMomentum,BMass+BEnergy);
+  double BeamRapidityTem = BeamLabTem.Rapidity();
+
+return BeamRapidityTem;
 }

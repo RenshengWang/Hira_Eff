@@ -47,17 +47,8 @@ public:
   void Set_uBall_MultiCut(int tem) { uBall_MultiCut = tem; }
   double ImpactPar_Range[20][2];
   void Set_ImpactPar_Range(int Num, double Pars[20][2]);
-  TH2D* h2_Theta_Ekin_CM_GeoReactionEff_ImpactPars[10][20];//[impactpar][PID]
-  TH2D* h2_Theta_Ekin_CM_GeoEff_ImpactPars[10][20];//[impactpar][PID]
-  TH2D* h2_Theta_Ekin_CM_noEff_ImpactPars[10][20];//[impactpar][PID]
   
-  TH1D* h1_Hira_ESpec_Lab_GeoEff_ImpactPars[10][20][10]; //[impactpar][PID][Theta_Lab]
-  TH1D* h1_Hira_ESpec_Lab_GeoReactionEff_ImpactPars[10][20][10]; //[impactpar][PID][Theta_Lab]
-  TH2D* h2_Theta_Ekin_Lab_GeoReactionEff_ImpactPars[10][20];//[impactpar][PID]
-  TH2D* h2_Theta_Ekin_Lab_GeoEff_ImpactPars[10][20];//[impactpar][PID]
-  TH2D* h2_Theta_Ekin_Lab_noEff_ImpactPars[10][20];//[impactpar][PID]
-  
-  // for setting the Bad map.
+   // for setting the Bad map.
   Hira_BadMap* Hira_BadMapper;
   void Initial_Hira_BadMapper(Hira_BadMap* tem) { Hira_BadMapper = tem; }
   Hira_GeoEff* Hira_GeoEfficiency;
@@ -77,6 +68,23 @@ public:
   string ParticleName[20]; double ParticleMass[20];
   int ParticleZ[20]; int ParticleA[20];
   
+  
+  //the below histograms is for storing the Spectrum.
+  TH2D* h2_Theta_Ekin_CM_GeoReactionEff_ImpactPars[10][20];//[impactpar][PID]
+  TH2D* h2_Theta_Ekin_CM_GeoEff_ImpactPars[10][20];//[impactpar][PID]
+  TH2D* h2_Theta_Ekin_CM_noEff_ImpactPars[10][20];//[impactpar][PID]
+  
+  TH1D* h1_Hira_ESpec_Lab_GeoEff_ImpactPars[10][20][10]; //[impactpar][PID][Theta_Lab]
+  TH1D* h1_Hira_ESpec_Lab_GeoReactionEff_ImpactPars[10][20][10]; //[impactpar][PID][Theta_Lab]
+  
+  TH2D* h2_Theta_Ekin_Lab_GeoReactionEff_ImpactPars[10][20];//[impactpar][PID]
+  TH2D* h2_Theta_Ekin_Lab_GeoEff_ImpactPars[10][20];//[impactpar][PID]
+  TH2D* h2_Theta_Ekin_Lab_noEff_ImpactPars[10][20];//[impactpar][PID]
+  
+  TH2D* h2_y_PtA_Lab_GeoReactionEff_ImpactPars[10][20];//[impactpar][PID]
+  TH2D* h2_y_PtA_Lab_GeoEff_ImpactPars[10][20];//[impactpar][PID]
+  TH2D* h2_y_PtA_Lab_noEff_ImpactPars[10][20];//[impactpar][PID]
+ 
   //checking the spectrum in the lab.
   int Num_Theta_Lab_ForChecking;
   void Set_Num_Theta_Lab_ForChecking(int NumTem) { Num_Theta_Lab_ForChecking = NumTem; }
@@ -102,9 +110,11 @@ public:
   int CurrentSystemIndex;
   string SystemTag_All[20];
   double BetaZ_LabToCM[20];
+  double Rapidity_Beam_Lab[20];
   void Initial_LabToCM(string SystemTagTem);
   TVector3 BetaVector_LabToCM[20];
   double GetBetaZ_LabToCM(double BeamMassTem,double TargetMassTem, double BeamEnergyTem);
+  double Get_BeamRapidity_Lab(double BeamMassTem,double BeamEnergyTem);
   
   //the below is for setting the correction of Reaction lost.
   TF1* f1_ReactionLost_CorEff[20];
