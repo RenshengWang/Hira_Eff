@@ -7,22 +7,33 @@ void _3_Draw_PID_ESpec()
   string ESpecStoreFilePath = "./ESpec";
   string ExpFileNameList[200];
   
-  //the below is for setting the data file.  
-/*
+  //the below is a DB for the map, you can increase as you need.
+  int StartRunNo_Ca40Ni58E140[3] = {2571,2587,2848};
+  int EndRunNo_Ca40Ni58E140[3] = {2586,2611,2870};
+  string Hira_BadMap_Version_Ca40Ni58E140[3] = {"V2","V2.1","V2"};
+  
+  int StartRunNo_Ca48Ni64E140[2] = {4023,4082};
+  int EndRunNo_Ca48Ni64E140[2] = {4032,4123};
+  string Hira_BadMap_Version_Ca48Ni64E140[2] = {"V1","V1"};
+  
+  //the below is for setting the data file.
+  int Index_Ca40Ni58E140 = 2;
   string SystemTag = "Ca40Ni58E140";
-  int StartRunNo = 2587;
-  int EndRunNo = 2611;
+  int StartRunNo = StartRunNo_Ca40Ni58E140[Index_Ca40Ni58E140];
+  int EndRunNo = EndRunNo_Ca40Ni58E140[Index_Ca40Ni58E140];
   const int ExpFileNum = EndRunNo-StartRunNo+1;
   string RunTag = std::to_string(StartRunNo)+"-"+std::to_string(EndRunNo);
-  string Hira_BadMap_Version = "V2.1";
-*/
+  string Hira_BadMap_Version = Hira_BadMap_Version_Ca40Ni58E140[Index_Ca40Ni58E140];
 
+/*
+  int Index_Ca48Ni64E140 = 0;
   string SystemTag = "Ca48Ni64E140";
-  int StartRunNo = 4023;
-  int EndRunNo = 4032;
+  int StartRunNo = StartRunNo_Ca48Ni64E140[Index_Ca48Ni64E140];
+  int EndRunNo = EndRunNo_Ca48Ni64E140[Index_Ca48Ni64E140];
   const int ExpFileNum = EndRunNo-StartRunNo+1;
   string RunTag = std::to_string(StartRunNo)+"-"+std::to_string(EndRunNo);
-  string Hira_BadMap_Version = "V1";
+  string Hira_BadMap_Version = Hira_BadMap_Version_Ca48Ni64E140[Index_Ca48Ni64E140];
+*/
 
   char NameTem[200];
   int FileIndex = 0;
