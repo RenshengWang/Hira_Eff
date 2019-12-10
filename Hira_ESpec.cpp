@@ -1,4 +1,7 @@
 #include "Hira_ESpec.hh"
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
 ClassImp(Hira_ESpec);
 
 Hira_ESpec::Hira_ESpec(string SystemTagTem,string RunTagTem,string Hira_BadMap_VersionTem)
@@ -14,10 +17,31 @@ Hira_ESpec::Hira_ESpec(string SystemTagTem,string RunTagTem,string Hira_BadMap_V
   IsSelect_ImpactPar = 0;
   ImpactNum = 0;
   uBall_MultiCut = 5;
+  
+  ThetaLabCutNum = 0; //the default value is no theta cut.
 }
 
 Hira_ESpec::~Hira_ESpec()
 {;}
+
+void Hira_ESpec::AddThetaLab_Cut(double Theta1, double Theta2)
+{
+  ThetaLab_Cut[ThetaLabCutNum][0] = Theta1;
+  ThetaLab_Cut[ThetaLabCutNum][1] = Theta2;
+  cout<<"The "<<ThetaLabCutNum<<" select cut : "<<ThetaLab_Cut[ThetaLabCutNum][0]<<"  "<<ThetaLab_Cut[ThetaLabCutNum][1]<<endl;
+  
+  ThetaLabCutNum++;
+}
+
+bool Hira_ESpec::IsInThetaLab_Cut(double tem)
+{
+  if(ThetaLabCutNum==0) { return 1; } //it means there is no ThetaCut, just choose all the theta.
+  for(int i=0;i<ThetaLabCutNum;i++)
+  {
+    if(tem>=ThetaLab_Cut[i][0] && tem<ThetaLab_Cut[i][1]) { return 1; break;}
+  }
+return 0;
+}
 
 void Hira_ESpec::SetAnaTag(string SystemTagTem, string RunTagTem, string Hira_BadMap_VersionTem)
 {
@@ -258,7 +282,7 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
   
   for(int iEvt = 0;iEvt<EvtNum;iEvt++)
   {
-    if(iEvt%100000==0) { cout<<"iEvt: "<<iEvt<<"  -  "<<setw(3)<<1.0*iEvt/EvtNum<<endl; }
+    if(iEvt%100000==0) { printProgress (1.0*iEvt/EvtNum); }
     t1_Data->GetEntry(iEvt);
     h2_Impact_uBallMulti->Fill(uBall_fmulti,uBall_fb);
     
@@ -305,6 +329,8 @@ void Hira_ESpec::ReadExpData(int ExpFileNum,string ExpDataFile[],string FilePath
             }
             double Theta_Lab = P_3D_Lab.Theta()*RadToDeg();
             double Ekin_Lab = fKinEnergy[iP];
+            
+            if(ThetaLabCutNum!=0 && IsInThetaLab_Cut(Theta_Lab)==0) { continue; } //ignore the particles out of the theta range.
             
             double Pt_Lab = P_3D_Lab.Pt();//get the transverse momentum.
             double Pt_A_Lab = Pt_Lab/fAId[iP];
@@ -619,4 +645,13 @@ double Hira_ESpec::Get_BeamRapidity_Lab(double BMass,double BEnergy)
   double BeamRapidityTem = BeamLabTem.Rapidity();
 
 return BeamRapidityTem;
+}
+
+void Hira_ESpec::printProgress (double percentage)
+{
+  int val = (int) (percentage * 100);
+  int lpad = (int) (percentage * PBWIDTH);
+  int rpad = PBWIDTH - lpad;
+  printf ("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+  fflush (stdout);
 }

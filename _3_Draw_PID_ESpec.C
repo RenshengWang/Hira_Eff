@@ -4,7 +4,7 @@ void _3_Draw_PID_ESpec()
   string Hira_BadMap_FilePath = "./GeoEff";
   int ImpactPar_Num = 2;
   double ImpactPars[20][2] = {{0,3.0},{3.0,5.0}};
-  string ESpecStoreFilePath = "./ESpec";
+  string ESpecStoreFilePath = "./ESpec/Theta_28_75";
   string ExpFileNameList[200];
   
   //the below is a DB for the map, you can increase as you need.
@@ -15,25 +15,25 @@ void _3_Draw_PID_ESpec()
   int StartRunNo_Ca48Ni64E140[2] = {4023,4082};
   int EndRunNo_Ca48Ni64E140[2] = {4032,4123};
   string Hira_BadMap_Version_Ca48Ni64E140[2] = {"V1","V1"};
-  
+/*  
   //the below is for setting the data file.
-  int Index_Ca40Ni58E140 = 2;
+  int Index_Ca40Ni58E140 = 0; //0,1,2.
   string SystemTag = "Ca40Ni58E140";
   int StartRunNo = StartRunNo_Ca40Ni58E140[Index_Ca40Ni58E140];
   int EndRunNo = EndRunNo_Ca40Ni58E140[Index_Ca40Ni58E140];
   const int ExpFileNum = EndRunNo-StartRunNo+1;
   string RunTag = std::to_string(StartRunNo)+"-"+std::to_string(EndRunNo);
   string Hira_BadMap_Version = Hira_BadMap_Version_Ca40Ni58E140[Index_Ca40Ni58E140];
+*/
 
-/*
-  int Index_Ca48Ni64E140 = 0;
+  int Index_Ca48Ni64E140 = 1; //0, 1.
   string SystemTag = "Ca48Ni64E140";
   int StartRunNo = StartRunNo_Ca48Ni64E140[Index_Ca48Ni64E140];
   int EndRunNo = EndRunNo_Ca48Ni64E140[Index_Ca48Ni64E140];
   const int ExpFileNum = EndRunNo-StartRunNo+1;
   string RunTag = std::to_string(StartRunNo)+"-"+std::to_string(EndRunNo);
   string Hira_BadMap_Version = Hira_BadMap_Version_Ca48Ni64E140[Index_Ca48Ni64E140];
-*/
+
 
   char NameTem[200];
   int FileIndex = 0;
@@ -62,6 +62,7 @@ void _3_Draw_PID_ESpec()
   Hira_ESpectrum->Set_ImpactPar_Range(ImpactPar_Num,ImpactPars);
   
   Hira_ESpectrum->Set_GeoEff_Cut(0.001);
+  Hira_ESpectrum->AddThetaLab_Cut(28.5,75.2); //only analyze the data within this region.
   Hira_ESpectrum->Set_uBall_MultiCut(5); //if the uBall's multi<5, then the impact par is not "credible".
   Hira_ESpectrum->Initial_ReactionLost_CorEff();
   Hira_ESpectrum->Set_Num_Theta_Lab_ForChecking(5); //this parameter will divide the theta into N parts, and draw the energy in the lab.

@@ -37,6 +37,12 @@ public:
   string Hira_BadMap_Version;
   void SetAnaTag(string SystemTagTem, string RunTagTem, string Hira_BadMap_VersionTem);
   
+  //for setting the Theta_Lab cut
+  int ThetaLabCutNum;
+  double ThetaLab_Cut[50][2]; //this cut is used to select some theta region for analyzing, not ignore this region.
+  void AddThetaLab_Cut(double Theta1, double Theta2);
+  bool IsInThetaLab_Cut(double tem);
+  
   //for impact parameters.
   TH2D* h2_Impact_uBallMulti;
   bool IsSelect_ImpactPar;
@@ -127,6 +133,7 @@ public:
   //before next analysis step, these spectrum are necessary to check.
   void Draw_ESpec_Info();
   void Draw_ReactionEff();
+  void printProgress (double percentage);
   ClassDef(Hira_ESpec,1)
 };
 
